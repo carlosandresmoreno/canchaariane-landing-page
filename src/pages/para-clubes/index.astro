@@ -1,0 +1,100 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Icon from '../../components/Icon.astro';
+import FaqList from '../../components/FaqList.astro';
+import { whatsappLink, SITE } from '../../lib/config';
+import { faqSchema, webPageSchema } from '../../lib/schema';
+
+const wa = whatsappLink('Hola, tengo una cancha y quiero publicarla en Canchariane');
+const crumbs = [
+  { name: 'Inicio', path: '/' },
+  { name: 'Para clubes', path: '/para-clubes/' },
+];
+const title = 'Software de Reservas para Canchas Sintéticas | Canchariane';
+const description = `Recibe reservas en línea 24/7 para tu cancha sintética en ${SITE.defaultCity}. Sin reservas dobles, agenda en tiempo real, panel de administración y estadísticas.`;
+
+const features = [
+  { icon: 'calendar', title: 'Reservas 24/7', text: 'Tus clientes reservan solos, a cualquier hora, desde el celular. Tú dejas de contestar el teléfono.' },
+  { icon: 'shield', title: 'Cero reservas dobles', text: 'El sistema bloquea cualquier choque de horario desde la base de datos. Imposible vender la misma hora dos veces.' },
+  { icon: 'clock', title: 'Agenda en tiempo real', text: 'Una grilla semanal con todas tus canchas. Las reservas nuevas aparecen al instante, sin recargar.' },
+  { icon: 'ticket', title: 'Precios y horarios a tu medida', text: 'Tarifas por cancha, horarios de apertura (incluso después de medianoche) y bloqueos para mantenimiento o torneos.' },
+  { icon: 'chart', title: 'Estadísticas', text: 'Ocupación, ingresos y horas más vendidas para tomar mejores decisiones.' },
+  { icon: 'users', title: 'Tu equipo incluido', text: 'Da acceso a recepción y administradores, cada uno con su propio usuario.' },
+] as const;
+
+const faqs = [
+  { q: '¿Qué necesito para publicar mi cancha?', a: 'Solo los datos de tu club: canchas, formatos, precios por hora y horarios de apertura. Lo configuramos contigo.' },
+  { q: '¿Puedo seguir recibiendo reservas por teléfono?', a: 'Sí. Desde el panel registras las reservas que te lleguen por teléfono o en persona, y todo queda en la misma agenda sin choques.' },
+  { q: '¿Cómo me pagan los clientes?', a: 'El cliente paga directamente en tu club. Canchariane no retiene tu dinero.' },
+];
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  breadcrumbs={crumbs}
+  schema={[webPageSchema({ path: '/para-clubes/', name: title, description }), faqSchema(faqs)]}
+>
+  <section class="relative isolate overflow-hidden bg-night text-white">
+    <div class="absolute -top-32 -right-32 -z-10 size-[36rem] rounded-full bg-electric/40 blur-3xl" aria-hidden="true"></div>
+    <div class="absolute -bottom-40 -left-20 -z-10 size-[24rem] rounded-full bg-pitch/20 blur-3xl" aria-hidden="true"></div>
+    <div class="mx-auto max-w-7xl px-4 pt-8 pb-16 sm:px-6 lg:px-8 lg:pt-12 lg:pb-24">
+      <div class="text-white/60 [&_.text-ink]:text-white [&_.text-muted]:text-white/60 [&_a:hover]:text-white">
+        <Breadcrumbs items={crumbs} />
+      </div>
+      <p class="eyebrow mt-10 text-pitch"><span class="h-0.5 w-6 bg-pitch" aria-hidden="true"></span>Para dueños de canchas</p>
+      <h1 class="display mt-5 max-w-4xl text-[clamp(2.3rem,9vw,5.25rem)]">
+        Llena tu cancha <span class="text-pitch">sin contestar</span> el teléfono
+      </h1>
+      <p class="mt-6 max-w-2xl text-lg leading-relaxed text-white/75">
+        Canchariane es el sistema de reservas en línea para canchas sintéticas: tus clientes ven los horarios libres y reservan solos, y
+        tú administras todo desde un panel.
+      </p>
+      <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+        <a href={wa ?? '#contacto'} target={wa ? '_blank' : undefined} rel={wa ? 'noopener' : undefined} class="btn btn-pitch text-base">
+          {wa && <Icon name="whatsapp" class="size-5" />} Quiero publicar mi cancha
+        </a>
+        <a href="#funciones" class="btn border border-white/25 text-base text-white hover:bg-white/10">Ver funciones</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="funciones" class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28" aria-labelledby="funciones-title">
+    <h2 id="funciones-title" class="display text-[2.3rem] sm:text-5xl">Todo lo que tu club <span class="text-electric">necesita</span></h2>
+    <ul class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+      {
+        features.map((f) => (
+          <li class="card p-6 sm:p-8">
+            <span class="grid size-12 place-items-center rounded-2xl bg-pitch-50 text-pitch-700">
+              <Icon name={f.icon} class="size-6" />
+            </span>
+            <h3 class="display-tight mt-6 text-xl">{f.title}</h3>
+            <p class="mt-2 leading-relaxed text-ink-soft">{f.text}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="bg-mist" aria-labelledby="faq-clubes">
+    <div class="mx-auto max-w-4xl px-4 py-20 sm:px-6 lg:py-24">
+      <h2 id="faq-clubes" class="display text-[2.1rem] sm:text-4xl">Preguntas de clubes</h2>
+      <div class="mt-8"><FaqList faqs={faqs} /></div>
+    </div>
+  </section>
+
+  <section id="contacto" class="px-4 py-16 sm:px-6 lg:px-8 lg:py-24" aria-labelledby="contacto-title">
+    <div class="cut-br mx-auto max-w-7xl rounded-[2rem] bg-electric px-6 py-14 text-white sm:px-12 lg:py-20">
+      <h2 id="contacto-title" class="display text-[2.4rem] sm:text-6xl">Activa tu club <span class="text-pitch">hoy</span></h2>
+      <p class="mt-5 max-w-xl text-lg text-white">Escríbenos y te mostramos Canchariane funcionando con tus propias canchas.</p>
+      {
+        wa && (
+          <a href={wa} target="_blank" rel="noopener" class="btn btn-pitch mt-8 text-base">
+            <Icon name="whatsapp" class="size-5" /> Escribir por WhatsApp
+          </a>
+        )
+      }
+    </div>
+  </section>
+</BaseLayout>

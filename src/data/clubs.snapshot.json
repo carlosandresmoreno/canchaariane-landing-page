@@ -1,0 +1,305 @@
+[
+  {
+    "id": "01a18307-3ac7-77db-9c14-eb03dd465440",
+    "slug": "parque-el-oso",
+    "name": "Parque el Oso",
+    "timezone": "America/Bogota",
+    "address": "Parque El Oso, Pereira, Risaralda",
+    "phone": "+573333333333",
+    "logo_url": null,
+    "latitude": 4.798475,
+    "longitude": -75.73287,
+    "city": "Pereira",
+    "courts": [
+      {
+        "id": "01a18308-40d7-7d07-b455-2ae4abcda498",
+        "name": "Futbol 5x5",
+        "sport": "football",
+        "surface": "synthetic_grass",
+        "player_format": "5x5",
+        "is_covered": false,
+        "has_lighting": true,
+        "price_per_hour_cents": 4500000
+      }
+    ],
+    "business_hours": [
+      {
+        "weekday": 0,
+        "opens_at": "13:00",
+        "closes_at": "23:00",
+        "closes_next_day": false
+      },
+      {
+        "weekday": 1,
+        "opens_at": "13:00",
+        "closes_at": "23:00",
+        "closes_next_day": false
+      },
+      {
+        "weekday": 2,
+        "opens_at": "13:00",
+        "closes_at": "23:00",
+        "closes_next_day": false
+      },
+      {
+        "weekday": 3,
+        "opens_at": "13:00",
+        "closes_at": "23:00",
+        "closes_next_day": false
+      },
+      {
+        "weekday": 4,
+        "opens_at": "13:00",
+        "closes_at": "23:00",
+        "closes_next_day": false
+      },
+      {
+        "weekday": 5,
+        "opens_at": "13:00",
+        "closes_at": "23:00",
+        "closes_next_day": false
+      },
+      {
+        "weekday": 6,
+        "opens_at": "13:00",
+        "closes_at": "23:00",
+        "closes_next_day": false
+      }
+    ],
+    "allowed_durations": [
+      60
+    ],
+    "default_duration": 60,
+    "slot_step_minutes": null,
+    "court_selection_mode": "manual",
+    "court_groups": [
+      {
+        "id": "football-5x5",
+        "name": "Football (5X5)",
+        "sport": "football",
+        "player_format": "5x5",
+        "surface": "synthetic_grass",
+        "is_covered": false,
+        "price_per_hour_cents": 4500000,
+        "court_ids": [
+          "01a18308-40d7-7d07-b455-2ae4abcda498"
+        ],
+        "court_count": 1,
+        "selection_mode": "manual"
+      }
+    ],
+    "announcement": null
+  },
+  {
+    "id": "01a15ac5-80b5-711b-93f2-5cd05e9073d7",
+    "slug": "futbox",
+    "name": "Futbox",
+    "timezone": "America/Bogota",
+    "address": "Cra. 5 #Calle 4-17, Comuna Oriente, Pereira, Risaralda",
+    "phone": "3245650656",
+    "logo_url": null,
+    "latitude": 4.814255,
+    "longitude": -75.681607,
+    "city": "Pereira",
+    "courts": [
+      {
+        "id": "01a15acb-fa17-7a61-b580-7c1b1201d616",
+        "name": "Cancha 1",
+        "sport": "football",
+        "surface": "synthetic_grass",
+        "player_format": "6x6",
+        "is_covered": false,
+        "has_lighting": true,
+        "price_per_hour_cents": 6000000
+      },
+      {
+        "id": "01a15acc-c663-7a10-88df-fe6c5fa0919a",
+        "name": "Cancha 2",
+        "sport": "football",
+        "surface": "synthetic_grass",
+        "player_format": "6x6",
+        "is_covered": false,
+        "has_lighting": true,
+        "price_per_hour_cents": 6000000
+      }
+    ],
+    "business_hours": [
+      {
+        "weekday": 0,
+        "opens_at": "09:00",
+        "closes_at": "00:00",
+        "closes_next_day": true
+      },
+      {
+        "weekday": 1,
+        "opens_at": "09:00",
+        "closes_at": "00:00",
+        "closes_next_day": true
+      },
+      {
+        "weekday": 2,
+        "opens_at": "09:00",
+        "closes_at": "00:00",
+        "closes_next_day": true
+      },
+      {
+        "weekday": 3,
+        "opens_at": "09:00",
+        "closes_at": "00:00",
+        "closes_next_day": true
+      },
+      {
+        "weekday": 4,
+        "opens_at": "09:00",
+        "closes_at": "00:00",
+        "closes_next_day": true
+      },
+      {
+        "weekday": 5,
+        "opens_at": "09:00",
+        "closes_at": "00:00",
+        "closes_next_day": true
+      },
+      {
+        "weekday": 6,
+        "opens_at": "09:00",
+        "closes_at": "00:00",
+        "closes_next_day": true
+      }
+    ],
+    "allowed_durations": [
+      60,
+      120
+    ],
+    "default_duration": 60,
+    "slot_step_minutes": 60,
+    "court_selection_mode": "by_category",
+    "court_groups": [
+      {
+        "id": "football-6x6",
+        "name": "Football (6X6)",
+        "sport": "football",
+        "player_format": "6x6",
+        "surface": "synthetic_grass",
+        "is_covered": false,
+        "price_per_hour_cents": 6000000,
+        "court_ids": [
+          "01a15acb-fa17-7a61-b580-7c1b1201d616",
+          "01a15acc-c663-7a10-88df-fe6c5fa0919a"
+        ],
+        "court_count": 2,
+        "selection_mode": "auto"
+      }
+    ],
+    "announcement": null
+  },
+  {
+    "id": "01a18f2d-2152-7089-97ad-61cb171b206e",
+    "slug": "club-ariane",
+    "name": "club ariane",
+    "timezone": "America/Bogota",
+    "address": "hamburgo manzana n",
+    "phone": "300232131",
+    "logo_url": null,
+    "latitude": 4.806525,
+    "longitude": -75.714244,
+    "city": "Pereira",
+    "courts": [
+      {
+        "id": "01a18f2e-aa9f-7842-b280-c3d455e507a4",
+        "name": "cancha principal",
+        "sport": "football",
+        "surface": "synthetic_grass",
+        "player_format": "9x9",
+        "is_covered": false,
+        "has_lighting": true,
+        "price_per_hour_cents": 10000000
+      },
+      {
+        "id": "01a18f2f-3a76-7d15-bd43-f481d47826e6",
+        "name": "cancha secundaria",
+        "sport": "football",
+        "surface": "synthetic_grass",
+        "player_format": "5x5",
+        "is_covered": false,
+        "has_lighting": true,
+        "price_per_hour_cents": 6500000
+      }
+    ],
+    "business_hours": [
+      {
+        "weekday": 0,
+        "opens_at": "10:00",
+        "closes_at": "23:00",
+        "closes_next_day": false
+      },
+      {
+        "weekday": 2,
+        "opens_at": "10:00",
+        "closes_at": "23:00",
+        "closes_next_day": false
+      },
+      {
+        "weekday": 3,
+        "opens_at": "10:00",
+        "closes_at": "23:00",
+        "closes_next_day": false
+      },
+      {
+        "weekday": 4,
+        "opens_at": "10:00",
+        "closes_at": "23:00",
+        "closes_next_day": false
+      },
+      {
+        "weekday": 5,
+        "opens_at": "10:00",
+        "closes_at": "23:00",
+        "closes_next_day": false
+      },
+      {
+        "weekday": 6,
+        "opens_at": "10:00",
+        "closes_at": "23:00",
+        "closes_next_day": false
+      }
+    ],
+    "allowed_durations": [
+      60
+    ],
+    "default_duration": 60,
+    "slot_step_minutes": null,
+    "court_selection_mode": "manual",
+    "court_groups": [
+      {
+        "id": "football-9x9",
+        "name": "Football (9X9)",
+        "sport": "football",
+        "player_format": "9x9",
+        "surface": "synthetic_grass",
+        "is_covered": false,
+        "price_per_hour_cents": 10000000,
+        "court_ids": [
+          "01a18f2e-aa9f-7842-b280-c3d455e507a4"
+        ],
+        "court_count": 1,
+        "selection_mode": "manual"
+      },
+      {
+        "id": "football-5x5",
+        "name": "Football (5X5)",
+        "sport": "football",
+        "player_format": "5x5",
+        "surface": "synthetic_grass",
+        "is_covered": false,
+        "price_per_hour_cents": 6500000,
+        "court_ids": [
+          "01a18f2f-3a76-7d15-bd43-f481d47826e6"
+        ],
+        "court_count": 1,
+        "selection_mode": "manual"
+      }
+    ],
+    "announcement": null
+  }
+]

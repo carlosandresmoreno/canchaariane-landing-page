@@ -1,0 +1,156 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/archivo/wdth.css';
+@import '@fontsource-variable/plus-jakarta-sans/wght.css';
+
+/* ============================================================
+   Sistema de diseño Canchariane — fondo blanco, energía deportiva
+   Azul eléctrico (marca) + verde cancha (balón del logo) + tinta.
+   ============================================================ */
+@theme {
+  --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Archivo Variable', 'Arial Narrow', ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #0b1220;
+  --color-ink-soft: #334155;
+  --color-muted: #5b6476;
+  --color-line: #e6e8ee;
+  --color-mist: #f4f6fa;
+  --color-night: #06102e;
+
+  --color-electric: #0056fb;
+  --color-electric-700: #0040c4;
+  --color-electric-50: #eef3ff;
+  --color-electric-100: #dbe6ff;
+
+  --color-pitch: #00e575;
+  --color-pitch-300: #5cf0a4;
+  --color-pitch-700: #047a43;
+  --color-pitch-50: #e8fff3;
+
+  --radius-card: 1.75rem;
+
+  --animate-marquee: marquee 32s linear infinite;
+  --animate-rise: rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-pulse-dot: pulse-dot 1.8s ease-in-out infinite;
+
+  @keyframes marquee {
+    from { transform: translate3d(0, 0, 0); }
+    to { transform: translate3d(-50%, 0, 0); }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 0 rgb(0 229 117 / 0.55); }
+    50% { box-shadow: 0 0 0 7px rgb(0 229 117 / 0); }
+  }
+}
+
+@layer base {
+  html {
+    background: #fff;
+    color: var(--color-ink);
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+  body {
+    @apply bg-white font-sans text-ink antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: var(--color-pitch);
+    color: var(--color-ink);
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-electric);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  h1, h2, h3 { text-wrap: balance; }
+  p { text-wrap: pretty; }
+}
+
+@layer components {
+  /* Titulares tipo transmisión deportiva: anchos, negros, en mayúscula */
+  .display {
+    font-family: var(--font-display);
+    font-stretch: 125%;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.025em;
+    line-height: 0.92;
+  }
+  .display-tight {
+    font-family: var(--font-display);
+    font-stretch: 112%;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-xs font-bold tracking-[0.18em] uppercase;
+  }
+
+  /* Botones: mínimo 48px de alto (zona táctil) */
+  .btn {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-6 text-[0.95rem] font-bold whitespace-nowrap transition duration-200 select-none;
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    @apply bg-electric text-white;
+    box-shadow: 0 10px 24px -8px rgb(0 86 251 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.18);
+  }
+  .btn-primary:hover { @apply bg-electric-700; box-shadow: 0 14px 30px -8px rgb(0 86 251 / 0.65); }
+  .btn-pitch {
+    @apply bg-pitch text-ink;
+    box-shadow: 0 10px 24px -10px rgb(0 229 117 / 0.8);
+  }
+  .btn-pitch:hover { @apply bg-pitch-300; }
+  .btn-ghost {
+    @apply border border-line bg-white text-ink;
+  }
+  .btn-ghost:hover { @apply border-ink; }
+
+  .card {
+    @apply rounded-[var(--radius-card)] border border-line bg-white;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-3 py-1 text-xs font-semibold text-ink-soft;
+  }
+
+  /* Corte diagonal deportivo */
+  .cut-br { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 2.75rem), calc(100% - 2.75rem) 100%, 0 100%); }
+  .cut-tl { clip-path: polygon(2.75rem 0, 100% 0, 100% 100%, 0 100%, 0 2.75rem); }
+  .skew-tag { transform: skewX(-12deg); }
+  .skew-tag > * { display: inline-block; transform: skewX(12deg); }
+
+  /* Resaltado tipo marcador verde detrás de una palabra */
+  .mark-pitch {
+    background: linear-gradient(transparent 58%, var(--color-pitch) 58%, var(--color-pitch) 92%, transparent 92%);
+    padding-inline: 0.06em;
+  }
+
+  /* Textura de líneas de cancha muy sutil */
+  .pitch-grid {
+    background-image:
+      linear-gradient(to right, rgb(11 18 32 / 0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(11 18 32 / 0.045) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse at 50% 0%, #000 30%, transparent 75%);
+  }
+
+  .reveal { animation: var(--animate-rise); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

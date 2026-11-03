@@ -1,0 +1,60 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { getClubs } from '../lib/clubs';
+import { appLink, whatsappLink, SITE } from '../lib/config';
+import { clubPath } from '../lib/schema';
+
+const clubs = await getClubs();
+const wa = whatsappLink();
+const year = new Date().getFullYear();
+---
+<footer class="relative overflow-hidden bg-night text-white">
+  <div class="pointer-events-none absolute -top-40 -right-40 size-[28rem] rounded-full bg-electric/30 blur-3xl" aria-hidden="true"></div>
+  <div class="relative mx-auto max-w-7xl px-4 pt-16 pb-10 sm:px-6 lg:px-8">
+    <div class="grid gap-12 md:grid-cols-12">
+      <div class="md:col-span-5">
+        <Logo dark />
+        <p class="mt-5 max-w-sm text-sm leading-relaxed text-white/70">
+          La forma más rápida de alquilar canchas sintéticas en {SITE.defaultCity}. Mira horarios libres y reserva en
+          segundos, sin llamadas.
+        </p>
+        <div class="mt-6 flex flex-wrap gap-2">
+          <a href={appLink('/', { campaign: 'footer' })} class="btn btn-pitch !min-h-11 text-sm">
+            Reservar ahora <Icon name="arrow" class="size-4" />
+          </a>
+          {wa && (
+            <a href={wa} target="_blank" rel="noopener" class="btn !min-h-11 border border-white/20 text-sm text-white hover:bg-white/10">
+              <Icon name="whatsapp" class="size-4" /> WhatsApp
+            </a>
+          )}
+        </div>
+      </div>
+
+      <nav aria-label="Clubes" class="md:col-span-4">
+        <h2 class="eyebrow text-pitch">Canchas en {SITE.defaultCity}</h2>
+        <ul class="mt-4 grid gap-2.5 text-sm">
+          {clubs.slice(0, 8).map((c) => (
+            <li><a href={clubPath(c.slug)} class="text-white/80 hover:text-white">{c.name}</a></li>
+          ))}
+          <li><a href="/canchas/" class="font-semibold text-white hover:text-pitch">Ver todas →</a></li>
+        </ul>
+      </nav>
+
+      <nav aria-label="Información" class="md:col-span-3">
+        <h2 class="eyebrow text-pitch">Canchariane</h2>
+        <ul class="mt-4 grid gap-2.5 text-sm">
+          <li><a href="/#como-funciona" class="text-white/80 hover:text-white">Cómo funciona</a></li>
+          <li><a href="/preguntas-frecuentes/" class="text-white/80 hover:text-white">Preguntas frecuentes</a></li>
+          <li><a href="/para-clubes/" class="text-white/80 hover:text-white">Registra tu club</a></li>
+          <li><a href={appLink('/lookup', { campaign: 'footer-lookup' })} class="text-white/80 hover:text-white">Consultar mi reserva</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="mt-14 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
+      <p>© {year} Canchariane · {SITE.defaultCity}, {SITE.region}, Colombia</p>
+      <p>Hecho en el Eje Cafetero ⚽</p>
+    </div>
+  </div>
+</footer>

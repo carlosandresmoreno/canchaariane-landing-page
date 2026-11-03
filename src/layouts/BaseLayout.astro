@@ -1,0 +1,140 @@
+---
+import '../styles/global.css';
+import archivoLatin from '@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url';
+import jakartaLatin from '@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2?url';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import MobileCta from '../components/MobileCta.astro';
+import { SITE, GA4_ID } from '../lib/config';
+import { organizationSchema, websiteSchema, breadcrumbSchema, type Crumb } from '../lib/schema';
+
+interface Props {
+  /** Título SEO (≤ 60 caracteres). Si no incluye la marca, se agrega. */
+  title: string;
+  /** Meta descripción (140–160 caracteres ideal). */
+  description: string;
+  ogImage?: string;
+  ogType?: 'website' | 'article' | 'place';
+  noindex?: boolean;
+  breadcrumbs?: Crumb[];
+  /** Bloques JSON-LD adicionales propios de la página. */
+  schema?: Record<string, unknown>[];
+  /** Ocultar la barra fija inferior (móvil). */
+  hideMobileCta?: boolean;
+  /** Destino del botón de la barra fija móvil (por defecto, el directorio de la app). */
+  mobileCta?: { href: string; label: string };
+}
+
+const {
+  title,
+  description,
+  ogImage = SITE.ogImage,
+  ogType = 'website',
+  noindex = false,
+  breadcrumbs,
+  schema = [],
+  hideMobileCta = false,
+  mobileCta,
+} = Astro.props;
+
+const fullTitle = title.includes(SITE.name) ? title : `${title} | ${SITE.name}`;
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const ogImageUrl = new URL(ogImage, Astro.site).toString();
+
+const graph = [
+  organizationSchema(),
+  websiteSchema(),
+  ...(breadcrumbs?.length ? [breadcrumbSchema(breadcrumbs)] : []),
+  ...schema,
+];
+const jsonLd = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replace(/</g, '\\u003c');
+---
+
+<!doctype html>
+<html lang={SITE.lang} dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {!noindex && <link rel="canonical" href={canonical} />}
+    <meta name="robots" content={noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1'} />
+    {!noindex && <link rel="alternate" hreflang="es-CO" href={canonical} />}
+
+    <!-- Fuentes propias (sin Google Fonts = sin bloqueo ni rastreo de terceros) -->
+    <link rel="preload" href={archivoLatin} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={jakartaLatin} as="font" type="font/woff2" crossorigin />
+
+    <!-- Íconos y PWA -->
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- Open Graph (WhatsApp, Facebook, LinkedIn) -->
+    <meta property="og:type" content={ogType === 'place' ? 'website' : ogType} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:locale" content={SITE.locale} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={fullTitle} />
+
+    <!-- X / Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <!-- Señales locales -->
+    <meta name="geo.region" content="CO-RIS" />
+    <meta name="geo.placename" content="Pereira, Risaralda" />
+
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="alternate" type="text/plain" title="LLMs" href="/llms.txt" />
+
+    <script type="application/ld+json" set:html={jsonLd} />
+    <slot name="head" />
+
+    {GA4_ID && (
+      <script is:inline define:vars={{ id: GA4_ID }}>
+        // GA4 diferido: se carga cuando la página ya es interactiva (no afecta LCP ni Lighthouse).
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function () { dataLayer.push(arguments); };
+        gtag('js', new Date());
+        gtag('config', id);
+        const load = () => {
+          const s = document.createElement('script');
+          s.async = true;
+          s.src = 'https://www.googletagmanager.com/gtag/js?id=' + id;
+          document.head.appendChild(s);
+        };
+        addEventListener('load', () => ('requestIdleCallback' in window ? requestIdleCallback(load, { timeout: 3000 }) : setTimeout(load, 1500)));
+        // Evento de conversión: clic en cualquier botón que lleva a la app de reservas.
+        document.addEventListener('click', (e) => {
+          const a = e.target.closest && e.target.closest('a[href*="utm_source=landing"]');
+          if (a) gtag('event', 'click_reservar', { link_url: a.href, campaign: new URL(a.href).searchParams.get('utm_campaign') });
+        });
+      </script>
+    )}
+  </head>
+  <body class="min-h-dvh overflow-x-clip">
+    <a
+      href="#contenido"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-full focus:bg-ink focus:px-4 focus:py-2 focus:text-white"
+      >Saltar al contenido</a
+    >
+    <Header />
+    <main id="contenido" class:list={['pb-24 md:pb-0', hideMobileCta && 'pb-0']}>
+      <slot />
+    </main>
+    <Footer />
+    {!hideMobileCta && <MobileCta {...mobileCta} />}
+  </body>
+</html>

@@ -1,0 +1,25 @@
+---
+import Icon from './Icon.astro';
+import { appLink } from '../lib/config';
+interface Props { title?: string; text?: string; campaign?: string }
+const {
+  title = '¿Listo para <span class="text-pitch">jugar</span>?',
+  text = 'Elige club, cancha y hora. Tu reserva queda confirmada en segundos.',
+  campaign = 'cta-band',
+} = Astro.props;
+---
+<section class="px-4 py-16 sm:px-6 lg:px-8 lg:py-24" aria-labelledby="cta-title">
+  <div class="cut-br relative mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-electric px-6 py-14 text-white sm:px-12 lg:py-20">
+    <svg class="pointer-events-none absolute -right-10 -bottom-24 w-[34rem] max-w-none opacity-25" viewBox="0 0 200 200" aria-hidden="true">
+      <g fill="none" stroke="#fff" stroke-width="1.5"><circle cx="100" cy="100" r="60"/><circle cx="100" cy="100" r="95"/><line x1="0" y1="100" x2="200" y2="100"/></g>
+    </svg>
+    <div class="relative max-w-2xl">
+      <h2 id="cta-title" class="display text-[2.6rem] sm:text-6xl" set:html={title} />
+      <p class="mt-5 text-lg text-white">{text}</p>
+      <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+        <a href={appLink('/', { campaign })} class="btn btn-pitch text-base">Reservar mi cancha <Icon name="arrow" class="size-5" /></a>
+        <a href="/canchas/" class="btn border border-white/30 text-base text-white hover:bg-white/10">Ver clubes</a>
+      </div>
+    </div>
+  </div>
+</section>

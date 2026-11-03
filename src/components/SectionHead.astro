@@ -1,0 +1,9 @@
+---
+interface Props { eyebrow: string; title: string; id?: string; lead?: string; center?: boolean; as?: 'h1' | 'h2' }
+const { eyebrow, title, id, lead, center = false, as: H = 'h2' } = Astro.props;
+---
+<div class:list={['max-w-3xl', center && 'mx-auto text-center']}>
+  <p class="eyebrow text-electric"><span class="h-0.5 w-6 bg-pitch" aria-hidden="true"></span>{eyebrow}</p>
+  <H id={id} class="display mt-4 text-[2.4rem] text-ink sm:text-5xl lg:text-6xl" set:html={title} />
+  {lead && <p class="mt-5 text-lg leading-relaxed text-ink-soft">{lead}</p>}
+</div>

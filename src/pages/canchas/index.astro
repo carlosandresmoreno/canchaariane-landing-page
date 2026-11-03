@@ -1,0 +1,55 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ClubCard from '../../components/ClubCard.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import Icon from '../../components/Icon.astro';
+import { getClubs, stats, formatCOP, citySlug } from '../../lib/clubs';
+import { SITE, MIN_CLUBS_FOR_CITY_PAGE } from '../../lib/config';
+import { clubListSchema, webPageSchema } from '../../lib/schema';
+
+const clubs = await getClubs();
+const s = stats(clubs);
+const city = SITE.defaultCity;
+const crumbs = [{ name: 'Inicio', path: '/' }, { name: 'Canchas', path: '/canchas/' }];
+const title = `Canchas Sintéticas en ${city}: ${s.clubs} Clubes`;
+const description = `Lista de canchas sintéticas de fútbol en ${city}: ${s.formats.join(', ').toLowerCase()}. Compara precios${
+  s.minPrice ? ` desde ${formatCOP(s.minPrice)}/h` : ''
+}, horarios y ubicación, y reserva en línea.`;
+const cityPages = s.cities.length < 2 ? [] : s.cities.filter((c) => clubs.filter((cl) => cl.city === c).length >= MIN_CLUBS_FOR_CITY_PAGE);
+---
+<BaseLayout
+  title={title}
+  description={description}
+  breadcrumbs={crumbs}
+  schema={[webPageSchema({ path: '/canchas/', name: title, description }), clubListSchema(clubs, `Canchas sintéticas en ${city}`)]}
+>
+  <section class="relative isolate overflow-hidden border-b border-line">
+    <div class="pitch-grid absolute inset-0 -z-10" aria-hidden="true"></div>
+    <div class="mx-auto max-w-7xl px-4 pt-8 pb-14 sm:px-6 lg:px-8 lg:pt-12 lg:pb-20">
+      <Breadcrumbs items={crumbs} />
+      <h1 class="display mt-8 text-[clamp(2.3rem,9vw,5rem)]">
+        Canchas sintéticas <span class="block text-electric">en {city}</span>
+      </h1>
+      <p class="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft">
+        {s.clubs} {s.clubs === 1 ? 'club' : 'clubes'} y {s.courts} canchas de grama sintética para {s.formats.join(', ').toLowerCase()}.
+        Compara, elige y reserva en línea con horarios en tiempo real.
+      </p>
+      {cityPages.length > 0 && (
+        <ul class="mt-6 flex flex-wrap gap-2" aria-label="Ciudades">
+          {cityPages.map((c) => (
+            <li><a class="chip hover:border-ink" href={`/canchas-sinteticas/${citySlug(c)}/`}><Icon name="pin" class="size-3.5" />{c}</a></li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20" aria-label="Listado de clubes">
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+      {clubs.map((club, i) => <ClubCard club={club} index={i} headingLevel="h2" />)}
+    </div>
+  </section>
+
+  <CtaBand campaign="listado" />
+</BaseLayout>

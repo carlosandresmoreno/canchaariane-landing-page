@@ -1,0 +1,86 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import { clubPhotos } from '../lib/photos';
+import { formatCOP, type Club } from '../lib/clubs';
+import { appLink } from '../lib/config';
+import { clubPath } from '../lib/schema';
+
+interface Props { club: Club; index: number; headingLevel?: 'h2' | 'h3' }
+const { club, index, headingLevel: H = 'h3' } = Astro.props;
+const openDays = new Set(club.hours.map((h) => h.day)).size;
+const tones = [
+  'from-electric to-electric-700',
+  'from-night to-electric-700',
+  'from-pitch-700 to-night',
+];
+const tone = tones[index % tones.length];
+const cover = clubPhotos(club.slug, club.name)[0];
+const area = club.address?.split(',').slice(0, 2).join(',').trim();
+---
+<article class="group card relative flex flex-col overflow-hidden transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-electric/10">
+  <!-- Cabecera visual -->
+  <div class:list={['relative overflow-hidden bg-gradient-to-br', cover ? 'h-44' : 'h-36', tone]}>
+    {cover ? (
+      <>
+        <Image
+          src={cover.src}
+          alt={cover.alt}
+          widths={[400, 640, 800]}
+          sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
+          class="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
+          loading="lazy"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/10 to-ink/30" aria-hidden="true"></div>
+      </>
+    ) : (
+    <svg class="absolute inset-0 h-full w-full" viewBox="0 0 400 144" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <g stroke="#fff" stroke-opacity=".28" stroke-width="2" fill="none">
+        <rect x="20" y="16" width="360" height="112" rx="6" />
+        <line x1="200" y1="16" x2="200" y2="128" />
+        <circle cx="200" cy="72" r="30" />
+        <rect x="20" y="40" width="50" height="64" /><rect x="330" y="40" width="50" height="64" />
+      </g>
+    </svg>
+    )}
+    <span class="display absolute -bottom-3 left-4 text-7xl text-white/15 before:content-[attr(data-n)]" data-n={String(index + 1).padStart(2, '0')} aria-hidden="true"></span>
+    <div class="absolute top-4 left-4 flex flex-wrap gap-1.5">
+      {club.formats.map((f) => (
+        <span class="skew-tag rounded-md bg-white px-2.5 py-1 text-[0.7rem] font-extrabold tracking-wide text-ink uppercase"><span>{f}</span></span>
+      ))}
+    </div>
+    {club.minPrice && (
+      <div class="absolute right-4 bottom-4 rounded-2xl bg-pitch px-3 py-1.5 text-right text-ink shadow-lg">
+        <span class="block text-[0.65rem] leading-none font-bold tracking-wider uppercase">Desde</span>
+        <span class="display-tight text-lg leading-tight">{formatCOP(club.minPrice)}</span>
+      </div>
+    )}
+  </div>
+
+  <div class="flex flex-1 flex-col p-5 sm:p-6">
+    <H class="display-tight text-2xl text-ink">
+      <a href={clubPath(club.slug)} class="after:absolute after:inset-0 after:content-['']">{club.name}</a>
+    </H>
+    {area && (
+      <p class="mt-2 flex items-start gap-1.5 text-sm text-muted">
+        <Icon name="pin" class="mt-0.5 size-4 shrink-0" /> <span>{area}</span>
+      </p>
+    )}
+
+    <ul class="mt-4 flex flex-wrap gap-1.5" aria-label="Características">
+      <li class="chip"><Icon name="ball" class="size-3.5" /> {club.courts.length} {club.courts.length === 1 ? 'cancha' : 'canchas'}</li>
+      {club.hasLighting && <li class="chip"><Icon name="light" class="size-3.5" /> Iluminación</li>}
+      {club.hasCovered && <li class="chip"><Icon name="roof" class="size-3.5" /> Techada</li>}
+      {openDays > 0 && <li class="chip"><Icon name="clock" class="size-3.5" /> {openDays === 7 ? 'Todos los días' : `${openDays} días/semana`}</li>}
+    </ul>
+
+    <div class="relative z-10 mt-auto flex gap-2 pt-6">
+      <a href={appLink(`/c/${club.slug}`, { campaign: 'club-card', content: club.slug })} class="btn btn-primary flex-1 !min-h-11 text-sm">
+        Reservar <Icon name="arrow" class="size-4" />
+      </a>
+      <a href={clubPath(club.slug)} class="btn btn-ghost !min-h-11 !px-4 text-sm" aria-label={`Ver detalles de ${club.name}`}>
+        Detalles
+      </a>
+    </div>
+  </div>
+</article>

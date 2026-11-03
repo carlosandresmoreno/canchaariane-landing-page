@@ -1,0 +1,10 @@
+---
+interface Props { class?: string; dark?: boolean }
+const { class: cls = '', dark = false } = Astro.props;
+---
+<span class:list={['inline-flex items-center gap-2.5', cls]}>
+  <img src="/logo-mark.svg" alt="" width="36" height="36" class="size-9 shrink-0" />
+  <span class:list={['display text-[1.05rem] leading-none tracking-tight', dark ? 'text-white' : 'text-ink']}>
+    Canchariane
+  </span>
+</span>

@@ -1,0 +1,25 @@
+---
+/** Barra fija inferior en móvil: la acción principal siempre al alcance del pulgar. */
+import Icon from './Icon.astro';
+import { appLink, whatsappLink } from '../lib/config';
+interface Props { href?: string; label?: string }
+const { href = appLink('/', { campaign: 'sticky-mobile' }), label = 'Reservar cancha' } = Astro.props;
+const wa = whatsappLink();
+---
+<div
+  class="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/90 px-3 pt-3 backdrop-blur-xl md:hidden"
+  style="padding-bottom: max(0.75rem, env(safe-area-inset-bottom));"
+>
+  <div class="flex gap-2">
+    <a href={href} class="btn btn-primary flex-1">
+      <Icon name="calendar" class="size-5" /> {label}
+    </a>
+    {wa ? (
+      <a href={wa} class="btn btn-pitch !px-4" aria-label="Escríbenos por WhatsApp" target="_blank" rel="noopener">
+        <Icon name="whatsapp" class="size-5" />
+      </a>
+    ) : (
+      <a href="/canchas/" class="btn btn-ghost !px-4">Ver canchas</a>
+    )}
+  </div>
+</div>

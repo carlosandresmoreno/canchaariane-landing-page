@@ -1,0 +1,67 @@
+---
+/**
+ * Página por ciudad. Solo se genera si la ciudad tiene al menos MIN_CLUBS_FOR_CITY_PAGE clubes
+ * (las páginas con 1 club son "contenido delgado" y perjudican el SEO).
+ */
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import ClubCard from '../../components/ClubCard.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { getClubs, stats, formatCOP, citySlug, type Club } from '../../lib/clubs';
+import { MIN_CLUBS_FOR_CITY_PAGE } from '../../lib/config';
+import { clubListSchema, webPageSchema } from '../../lib/schema';
+
+export const getStaticPaths = (async () => {
+  const clubs = await getClubs();
+  const byCity = Map.groupBy(clubs, (c) => c.city);
+  // Con una sola ciudad, esta página duplicaría /canchas/ (canibalización): no se genera.
+  if (byCity.size < 2) return [];
+  return [...byCity.entries()]
+    .filter(([, list]) => list.length >= MIN_CLUBS_FOR_CITY_PAGE)
+    .map(([city, list]) => ({ params: { city: citySlug(city) }, props: { city, clubs: list } }));
+}) satisfies GetStaticPaths;
+
+interface Props { city: string; clubs: Club[] }
+const { city, clubs } = Astro.props;
+const s = stats(clubs);
+const path = `/canchas-sinteticas/${citySlug(city)}/`;
+const crumbs = [
+  { name: 'Inicio', path: '/' },
+  { name: 'Canchas', path: '/canchas/' },
+  { name: city, path },
+];
+const title = `Canchas Sintéticas en ${city}: Precios`;
+const description = `${s.clubs} clubes con ${s.courts} canchas sintéticas en ${city}${
+  s.minPrice ? ` desde ${formatCOP(s.minPrice)}/hora` : ''
+}. ${s.formats.join(', ')}. Compara y reserva en línea sin llamar.`;
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  breadcrumbs={crumbs}
+  schema={[webPageSchema({ path, name: title, description }), clubListSchema(clubs, `Canchas sintéticas en ${city}`)]}
+>
+  <section class="relative isolate overflow-hidden border-b border-line">
+    <div class="pitch-grid absolute inset-0 -z-10" aria-hidden="true"></div>
+    <div class="mx-auto max-w-7xl px-4 pt-8 pb-14 sm:px-6 lg:px-8 lg:pt-12 lg:pb-20">
+      <Breadcrumbs items={crumbs} />
+      <h1 class="display mt-8 text-[clamp(2.3rem,9vw,5rem)]">
+        Canchas sintéticas <span class="block text-electric">en {city}</span>
+      </h1>
+      <p class="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft">
+        {s.clubs} clubes y {s.courts} canchas de grama sintética en {city} para {s.formats.join(', ').toLowerCase()}
+        {s.minPrice ? `, desde ${formatCOP(s.minPrice)} la hora` : ''}. Elige la más cercana y reserva con horarios en tiempo real.
+      </p>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20" aria-label={`Clubes en ${city}`}>
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+      {clubs.map((club, i) => <ClubCard club={club} index={i} headingLevel="h2" />)}
+    </div>
+  </section>
+
+  <CtaBand campaign={`ciudad-${citySlug(city)}`} />
+</BaseLayout>

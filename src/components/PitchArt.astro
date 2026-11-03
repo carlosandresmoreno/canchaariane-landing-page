@@ -1,0 +1,49 @@
+---
+/**
+ * Ilustración de cancha en perspectiva (SVG puro, ~2 KB) para el hero.
+ * Reemplazable por una foto real cuando el club la entregue.
+ */
+interface Props { class?: string }
+const { class: cls = '' } = Astro.props;
+---
+<svg class={cls} viewBox="0 0 600 640" fill="none" role="img" aria-label="Ilustración de una cancha sintética de fútbol vista desde arriba">
+  <defs>
+    <linearGradient id="turf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0066FF" />
+      <stop offset=".55" stop-color="#0047D6" />
+      <stop offset="1" stop-color="#06102E" />
+    </linearGradient>
+    <pattern id="stripes" width="600" height="80" patternUnits="userSpaceOnUse">
+      <rect width="600" height="40" fill="#fff" fill-opacity=".045" />
+    </pattern>
+    <radialGradient id="spot" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#00E575" stop-opacity=".55" />
+      <stop offset="1" stop-color="#00E575" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="600" height="640" rx="40" fill="url(#turf)" />
+  <rect width="600" height="640" rx="40" fill="url(#stripes)" />
+  <g stroke="#fff" stroke-opacity=".55" stroke-width="3">
+    <rect x="60" y="60" width="480" height="520" rx="10" />
+    <line x1="60" y1="320" x2="540" y2="320" />
+    <circle cx="300" cy="320" r="78" />
+    <rect x="175" y="60" width="250" height="110" />
+    <rect x="235" y="60" width="130" height="44" />
+    <rect x="175" y="470" width="250" height="110" />
+    <rect x="235" y="536" width="130" height="44" />
+    <path d="M250 170a60 60 0 0 0 100 0M250 470a60 60 0 0 1 100 0" />
+  </g>
+  <circle cx="300" cy="320" r="6" fill="#fff" fill-opacity=".8" />
+  <!-- Balón + estela -->
+  <circle cx="420" cy="230" r="90" fill="url(#spot)" />
+  <path d="M190 400 C 260 340, 330 290, 405 240" stroke="#00E575" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 12" />
+  <circle cx="420" cy="230" r="20" fill="#00E575" />
+  <path d="M410 218c8 6 10 16 4 25" stroke="#047A43" stroke-width="3" stroke-linecap="round" />
+  <!-- Jugadores (puntos) -->
+  <g fill="#fff">
+    <circle cx="190" cy="400" r="9" /><circle cx="330" cy="430" r="9" /><circle cx="250" cy="250" r="9" />
+  </g>
+  <g fill="#00E575">
+    <circle cx="380" cy="380" r="9" /><circle cx="300" cy="180" r="9" /><circle cx="450" cy="300" r="9" />
+  </g>
+</svg>

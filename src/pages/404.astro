@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { appLink } from '../lib/config';
+---
+
+<BaseLayout title="Página no encontrada" description="La página que buscas no existe. Reserva tu cancha sintética en Canchariane." noindex>
+  <section class="relative isolate overflow-hidden">
+    <div class="pitch-grid absolute inset-0 -z-10" aria-hidden="true"></div>
+    <div class="mx-auto max-w-3xl px-4 py-24 text-center sm:px-6 lg:py-32">
+      <p class="display text-[clamp(6rem,30vw,12rem)] text-electric" aria-hidden="true">404</p>
+      <h1 class="display mt-2 text-3xl sm:text-5xl">Balón <span class="mark-pitch">afuera</span></h1>
+      <p class="mt-5 text-lg text-ink-soft">Esta página no existe o se movió. Vuelve a la cancha:</p>
+      <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+        <a href="/" class="btn btn-ghost">Ir al inicio</a>
+        <a href={appLink('/', { campaign: '404' })} class="btn btn-primary">Reservar cancha <Icon name="arrow" class="size-5" /></a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

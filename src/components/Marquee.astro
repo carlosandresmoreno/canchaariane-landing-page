@@ -1,0 +1,22 @@
+---
+/** Franja animada tipo transmisión. Contenido duplicado (aria-hidden) para el bucle infinito. */
+interface Props { items: string[]; variant?: 'ink' | 'pitch' }
+const { items, variant = 'ink' } = Astro.props;
+const row = [...items, ...items];
+---
+<div
+  class:list={[
+    'relative flex overflow-hidden py-4 select-none',
+    variant === 'ink' ? 'bg-ink text-white' : 'bg-pitch text-ink',
+  ]}
+>
+  <p class="sr-only">{items.join(' · ')}</p>
+  <div class="flex w-max shrink-0 animate-marquee items-center gap-8 pr-8 motion-reduce:animate-none" aria-hidden="true">
+    {row.map((t) => (
+      <span class="display flex items-center gap-8 text-xl whitespace-nowrap sm:text-2xl">
+        {t}
+        <svg viewBox="0 0 24 24" class:list={['size-5', variant === 'ink' ? 'text-pitch' : 'text-electric']} fill="currentColor"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg>
+      </span>
+    ))}
+  </div>
+</div>

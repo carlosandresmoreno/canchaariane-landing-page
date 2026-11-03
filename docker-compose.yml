@@ -1,0 +1,16 @@
+services:
+  landing:
+    build:
+      context: .
+      args:
+        PUBLIC_APP_URL: ${PUBLIC_APP_URL:-https://cancha.arianedevs.com}
+        PUBLIC_API_URL: ${PUBLIC_API_URL:-https://cancha.arianedevs.com/api/v1}
+        PUBLIC_WHATSAPP: ${PUBLIC_WHATSAPP:-}
+        PUBLIC_GA4_ID: ${PUBLIC_GA4_ID:-}
+        HIDDEN_CLUBS: ${HIDDEN_CLUBS:-}
+    image: canchariane-landing:latest
+    container_name: canchariane-landing
+    # Solo localhost: el nginx del servidor publica el dominio. NO abrir 7010 en el Security Group.
+    ports:
+      - "127.0.0.1:7010:80"
+    restart: unless-stopped

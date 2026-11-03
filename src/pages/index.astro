@@ -1,0 +1,284 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import PitchArt from '../components/PitchArt.astro';
+import { Image } from 'astro:assets';
+import { heroPhoto } from '../lib/photos';
+import Marquee from '../components/Marquee.astro';
+import ClubCard from '../components/ClubCard.astro';
+import SectionHead from '../components/SectionHead.astro';
+import FaqList from '../components/FaqList.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { getClubs, stats, formatCOP } from '../lib/clubs';
+import { buildFaqs } from '../lib/faqs';
+import { appLink, SITE } from '../lib/config';
+import { clubListSchema, faqSchema, webPageSchema } from '../lib/schema';
+
+const clubs = await getClubs();
+const s = stats(clubs);
+const faqs = buildFaqs(clubs).slice(0, 5);
+const city = SITE.defaultCity;
+const hero = heroPhoto();
+
+const title = `Alquilar Canchas Sintéticas en ${city} | Canchariane`;
+const description = `Alquila canchas sintéticas de fútbol en ${city}${
+  s.minPrice ? ` desde ${formatCOP(s.minPrice)}/hora` : ''
+}. Mira horarios libres en tiempo real y reserva al instante, sin llamadas.`;
+
+const steps = [
+  { n: '01', icon: 'search', title: 'Elige tu club', text: `Compara clubes de ${city} por ubicación, tamaño de cancha y precio.` },
+  { n: '02', icon: 'clock', title: 'Escoge la hora', text: 'Ves solo los horarios libres, en tiempo real. La hora queda apartada para ti mientras confirmas.' },
+  { n: '03', icon: 'ticket', title: 'Juega', text: 'Recibes un código de reserva al instante. Llegas, lo muestras y pagas en el club.' },
+] as const;
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  schema={[
+    webPageSchema({ path: '/', name: title, description }),
+    clubListSchema(clubs, `Canchas sintéticas en ${city}`),
+    faqSchema(faqs),
+  ]}
+>
+  <!-- ============ HERO ============ -->
+  <section class="relative isolate overflow-hidden" aria-labelledby="hero-title">
+    <div class="pitch-grid absolute inset-0 -z-10" aria-hidden="true"></div>
+    <div class="absolute top-[-12rem] left-1/2 -z-10 size-[42rem] -translate-x-1/2 rounded-full bg-electric/10 blur-3xl" aria-hidden="true"></div>
+
+    <div class="mx-auto grid max-w-7xl items-center gap-10 px-4 pt-10 pb-14 sm:px-6 sm:pt-16 lg:grid-cols-12 lg:gap-8 lg:px-8 lg:pt-20 lg:pb-24">
+      <div class="reveal lg:col-span-7">
+        <p class="inline-flex items-center gap-2.5 rounded-full border border-line bg-white py-1.5 pr-4 pl-2 text-sm font-semibold text-ink-soft shadow-sm">
+          <span class="relative flex size-2.5 rounded-full bg-pitch animate-pulse-dot" aria-hidden="true"></span>
+          Reservas abiertas · {city}, {SITE.region}
+        </p>
+
+        <h1 id="hero-title" class="display mt-6 text-[clamp(2.4rem,10.4vw,4.4rem)] text-ink lg:text-[4.1rem] xl:text-[4.9rem]">
+          Alquila canchas <span class="mark-pitch">sintéticas</span>
+          <span class="block text-electric">en {city}</span>
+        </h1>
+
+        <p class="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft sm:text-xl">
+          Mira los horarios libres en tiempo real y reserva tu partido de fútbol en segundos.
+          <strong class="font-semibold text-ink">Sin llamadas, sin esperas.</strong>
+        </p>
+
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+          <a href={appLink('/', { campaign: 'hero' })} class="btn btn-primary text-base sm:!px-8">
+            Reservar cancha <Icon name="arrow" class="size-5" />
+          </a>
+          <a href="#canchas" class="btn btn-ghost text-base">Ver clubes en {city}</a>
+        </div>
+
+        <dl class="mt-10 grid max-w-lg grid-cols-3 divide-x divide-line rounded-2xl border border-line bg-white/80 py-4 backdrop-blur">
+          <div class="px-4">
+            <dt class="text-[0.7rem] font-bold tracking-wider text-muted uppercase">Clubes</dt>
+            <dd class="display-tight mt-1 text-3xl">{s.clubs}</dd>
+          </div>
+          <div class="px-4">
+            <dt class="text-[0.7rem] font-bold tracking-wider text-muted uppercase">Canchas</dt>
+            <dd class="display-tight mt-1 text-3xl">{s.courts}</dd>
+          </div>
+          <div class="px-4">
+            <dt class="text-[0.7rem] font-bold tracking-wider text-muted uppercase">Desde</dt>
+            <dd class="display-tight mt-1 text-xl leading-9 sm:text-2xl">{s.minPrice ? formatCOP(s.minPrice) : '—'}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Visual -->
+      <div class="relative mx-auto w-full max-w-md lg:col-span-5 lg:max-w-none">
+        <div class="cut-tl relative rotate-[1.5deg] overflow-hidden rounded-[2.5rem] shadow-2xl shadow-electric/25">
+          {hero ? (
+            <Image
+              src={hero.src}
+              alt={hero.alt}
+              widths={[420, 640, 900, 1200]}
+              sizes="(min-width: 1024px) 40vw, (min-width: 640px) 28rem, 100vw"
+              class="block aspect-[15/16] h-auto w-full object-cover"
+              loading="eager"
+              fetchpriority="high"
+            />
+          ) : (
+            <PitchArt class="block h-auto w-full" />
+          )}
+        </div>
+
+        <!-- Tarjeta flotante: horario libre -->
+        <div class="absolute top-6 -left-2 rounded-2xl border border-line bg-white/95 p-3.5 shadow-xl backdrop-blur sm:-left-8" aria-hidden="true">
+          <p class="flex items-center gap-2 text-[0.7rem] font-bold tracking-wider text-pitch-700 uppercase">
+            <span class="size-2 rounded-full bg-pitch animate-pulse-dot"></span> Libre hoy
+          </p>
+          <p class="display-tight mt-1 text-xl">7:00 p. m.</p>
+          <p class="text-xs text-muted">Fútbol 5 · 60 min</p>
+        </div>
+
+        <!-- Tarjeta flotante: confirmación -->
+        <div class="absolute -right-2 bottom-8 flex items-center gap-3 rounded-2xl bg-ink p-3.5 pr-5 text-white shadow-xl sm:-right-6" aria-hidden="true">
+          <span class="grid size-10 place-items-center rounded-xl bg-pitch text-ink"><Icon name="check" class="size-5" /></span>
+          <span>
+            <span class="block text-xs text-white/60">Reserva confirmada</span>
+            <span class="font-mono text-sm font-bold tracking-widest">CR-7K2M</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <Marquee items={['Fútbol 5', 'Fútbol 6', 'Fútbol 9', 'Reserva en segundos', 'Horarios en tiempo real', 'Sin llamadas', city]} />
+
+  <!-- ============ CÓMO FUNCIONA ============ -->
+  <section id="como-funciona" class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28" aria-labelledby="como-title">
+    <SectionHead
+      id="como-title"
+      eyebrow="Cómo funciona"
+      title="Reserva en <span class='text-electric'>3 pasos</span>"
+      lead="Sin llamar, sin esperar a que te contesten, sin llegar y encontrar la cancha ocupada."
+    />
+    <ol class="mt-12 grid gap-4 md:grid-cols-3 md:gap-6">
+      {steps.map((st, i) => (
+        <li class:list={['card relative overflow-hidden p-6 sm:p-8', i === 1 && 'md:translate-y-6', i === 2 && 'md:translate-y-12']}>
+          <span class="display pointer-events-none absolute -top-4 -right-2 text-[7.5rem] text-mist before:content-[attr(data-n)]" data-n={st.n} aria-hidden="true"></span>
+          <span class="relative grid size-12 place-items-center rounded-2xl bg-electric text-white shadow-lg shadow-electric/30">
+            <Icon name={st.icon} class="size-6" />
+          </span>
+          <h3 class="display-tight relative mt-6 text-2xl">{st.title}</h3>
+          <p class="relative mt-3 leading-relaxed text-ink-soft">{st.text}</p>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <!-- ============ BENTO: POR QUÉ ============ -->
+  <section class="bg-mist py-20 lg:py-28" aria-labelledby="porque-title">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <SectionHead
+        id="porque-title"
+        eyebrow="Por qué Canchariane"
+        title="Hecho para <span class='mark-pitch'>jugar</span> más"
+      />
+
+      <div class="mt-12 grid auto-rows-[minmax(11rem,auto)] grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <!-- Tiempo real (grande) -->
+        <article class="cut-br relative col-span-2 row-span-2 overflow-hidden rounded-[var(--radius-card)] bg-electric p-6 text-white sm:p-8">
+          <svg class="absolute -right-16 -bottom-16 w-80 opacity-20" viewBox="0 0 200 200" aria-hidden="true"><g fill="none" stroke="#fff" stroke-width="2"><circle cx="100" cy="100" r="40"/><circle cx="100" cy="100" r="70"/><circle cx="100" cy="100" r="98"/></g></svg>
+          <Icon name="bolt" class="size-9 text-pitch" />
+          <h3 class="display mt-6 text-4xl sm:text-5xl">Horarios en<br />tiempo real</h3>
+          <p class="mt-4 max-w-sm text-white/85">
+            Lo que ves libre, está libre. El sistema evita reservas dobles: si dos personas eligen la misma hora, solo una se la lleva.
+          </p>
+          <div class="mt-8 flex flex-wrap gap-2" aria-hidden="true">
+            {['5:00', '6:00', '7:00', '8:00', '9:00'].map((t, i) => (
+              <span class:list={['rounded-xl px-3.5 py-2 text-sm font-bold', i === 2 ? 'bg-pitch text-ink' : i === 1 ? 'bg-night/25 text-white/60 line-through' : 'bg-night/30']}>
+                {t} p. m.
+              </span>
+            ))}
+          </div>
+        </article>
+
+        <article class="card flex flex-col justify-between p-5 sm:p-6">
+          <Icon name="phoneOff" class="size-7 text-electric" />
+          <div>
+            <h3 class="display-tight mt-4 text-xl">Cero llamadas</h3>
+            <p class="mt-1.5 text-sm text-ink-soft">Reserva a cualquier hora, incluso de madrugada.</p>
+          </div>
+        </article>
+
+        <article class="flex flex-col justify-between rounded-[var(--radius-card)] bg-pitch p-5 text-ink sm:p-6">
+          <p class="text-xs font-bold tracking-wider uppercase">Desde</p>
+          <div>
+            <p class="display text-[1.6rem] sm:text-4xl">{s.minPrice ? formatCOP(s.minPrice) : '—'}</p>
+            <p class="mt-1 text-sm font-semibold">por hora · pagas en el club</p>
+          </div>
+        </article>
+
+        <article class="card flex flex-col justify-between p-5 sm:p-6">
+          <Icon name="ticket" class="size-7 text-electric" />
+          <div>
+            <h3 class="display-tight mt-4 text-xl">Código de reserva</h3>
+            <p class="mt-1.5 text-sm text-ink-soft">Consulta o cancela tu turno cuando quieras.</p>
+          </div>
+        </article>
+
+        <article class="relative flex flex-col justify-between overflow-hidden rounded-[var(--radius-card)] bg-night p-5 text-white sm:p-6">
+          <div class="absolute -top-10 -right-10 size-32 rounded-full bg-pitch/30 blur-2xl" aria-hidden="true"></div>
+          <Icon name="light" class="relative size-7 text-pitch" />
+          <div class="relative">
+            <h3 class="display-tight mt-4 text-xl">Juega de noche</h3>
+            <p class="mt-1.5 text-sm text-white/70">Canchas con iluminación hasta tarde.</p>
+          </div>
+        </article>
+
+        <article class="card col-span-2 flex flex-col justify-between gap-6 p-5 sm:flex-row sm:items-end sm:p-6 lg:col-span-4">
+          <div>
+            <Icon name="ball" class="size-7 text-electric" />
+            <h3 class="display-tight mt-4 text-xl">Todos los formatos</h3>
+            <p class="mt-1.5 text-sm text-ink-soft">Del partido entre amigos al torneo de empresa.</p>
+          </div>
+          <ul class="flex flex-wrap gap-2">
+            {s.formats.map((f) => (
+              <li class="skew-tag rounded-lg bg-ink px-3 py-1.5 text-sm font-extrabold text-white uppercase"><span>{f}</span></li>
+            ))}
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CLUBES ============ -->
+  <section id="canchas" class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28" aria-labelledby="canchas-title">
+    <div class="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+      <SectionHead
+        id="canchas-title"
+        eyebrow={`${s.clubs} ${s.clubs === 1 ? 'club' : 'clubes'} en ${city}`}
+        title={`Canchas sintéticas en <span class='text-electric'>${city}</span>`}
+      />
+      <a href="/canchas/" class="btn btn-ghost shrink-0 self-start md:self-auto">Ver todas <Icon name="arrow" class="size-4" /></a>
+    </div>
+
+    <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+      {clubs.slice(0, 6).map((club, i) => <ClubCard club={club} index={i} />)}
+    </div>
+  </section>
+
+  <!-- ============ PARA CLUBES ============ -->
+  <section class="px-4 sm:px-6 lg:px-8" aria-labelledby="clubes-title">
+    <div class="relative mx-auto grid max-w-7xl gap-10 overflow-hidden rounded-[2rem] border border-line bg-white p-6 sm:p-10 lg:grid-cols-2 lg:p-14">
+      <div class="pitch-grid absolute inset-0 -z-0 opacity-60" aria-hidden="true"></div>
+      <div class="relative">
+        <p class="eyebrow text-electric"><span class="h-0.5 w-6 bg-pitch" aria-hidden="true"></span>Para dueños de canchas</p>
+        <h2 id="clubes-title" class="display mt-4 text-[2.3rem] sm:text-5xl">Llena tu cancha <span class="text-electric">sin contestar el teléfono</span></h2>
+        <p class="mt-5 text-lg leading-relaxed text-ink-soft">
+          Recibe reservas en línea las 24 horas, sin choques de horario, y administra canchas, precios y turnos desde un solo panel.
+        </p>
+        <a href="/para-clubes/" class="btn btn-primary mt-8">Conoce Canchariane para clubes <Icon name="arrow" class="size-5" /></a>
+      </div>
+      <ul class="relative grid content-center gap-3 sm:grid-cols-2">
+        {[
+          ['calendar', 'Agenda en línea 24/7'],
+          ['shield', 'Cero reservas dobles'],
+          ['chart', 'Estadísticas de ocupación'],
+          ['users', 'Acceso para tu equipo'],
+        ].map(([icon, label]) => (
+          <li class="flex items-center gap-3 rounded-2xl border border-line bg-white p-4 font-semibold">
+            <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-pitch-50 text-pitch-700"><Icon name={icon as 'calendar'} class="size-5" /></span>
+            {label}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section class="mx-auto max-w-4xl px-4 py-20 sm:px-6 lg:py-28" aria-labelledby="faq-title">
+    <SectionHead id="faq-title" eyebrow="Preguntas frecuentes" title="Lo que todos preguntan" center />
+    <div class="mt-12">
+      <FaqList faqs={faqs} />
+    </div>
+    <p class="mt-8 text-center">
+      <a href="/preguntas-frecuentes/" class="font-semibold text-electric underline-offset-4 hover:underline">Ver todas las preguntas →</a>
+    </p>
+  </section>
+
+  <CtaBand campaign="home-final" />
+</BaseLayout>

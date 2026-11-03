@@ -1,0 +1,306 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { Image, getImage } from 'astro:assets';
+import { clubPhotos } from '../../lib/photos';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import ClubCard from '../../components/ClubCard.astro';
+import FaqList from '../../components/FaqList.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import Icon from '../../components/Icon.astro';
+import { getClubs, formatCOP, formatTime, hoursSummary, DAY_LONG, type Club } from '../../lib/clubs';
+import { appLink, escapeHtml } from '../../lib/config';
+import { clubSchema, faqSchema, webPageSchema, clubPath, abs } from '../../lib/schema';
+
+export const getStaticPaths = (async () => {
+  const clubs = await getClubs();
+  return clubs.map((club) => ({ params: { slug: club.slug }, props: { club, others: clubs.filter((c) => c.slug !== club.slug) } }));
+}) satisfies GetStaticPaths;
+
+interface Props { club: Club; others: Club[] }
+const { club, others } = Astro.props;
+
+const path = clubPath(club.slug);
+const formats = club.formats.join(', ').toLowerCase() || 'fútbol';
+const priceFrom = club.minPrice ? formatCOP(club.minPrice) : null;
+const hoursShort = hoursSummary(club.hours);
+const reserveUrl = appLink(`/c/${club.slug}`, { campaign: 'club-page', content: club.slug });
+const mapsUrl =
+  club.lat !== null && club.lng !== null
+    ? `https://www.google.com/maps/search/?api=1&query=${club.lat},${club.lng}`
+    : club.address
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(club.address)}`
+      : null;
+const osm =
+  club.lat !== null && club.lng !== null
+    ? `https://www.openstreetmap.org/export/embed.html?bbox=${club.lng - 0.006}%2C${club.lat - 0.004}%2C${club.lng + 0.006}%2C${club.lat + 0.004}&layer=mapnik&marker=${club.lat}%2C${club.lng}`
+    : null;
+
+const title = `${club.name}: Cancha Sintética en ${club.city}`;
+const description = `Reserva en ${club.name}, ${club.city}: ${club.courts.length} ${club.courts.length === 1 ? 'cancha' : 'canchas'} de ${formats}${
+  priceFrom ? ` desde ${priceFrom}/hora` : ''
+}${club.hasLighting ? ', con iluminación' : ''}. Mira horarios libres y reserva en línea.`;
+
+const crumbs = [
+  { name: 'Inicio', path: '/' },
+  { name: 'Canchas', path: '/canchas/' },
+  { name: club.name, path },
+];
+
+const faqs = [
+  {
+    q: `¿Cuánto cuesta alquilar una cancha en ${club.name}?`,
+    a: priceFrom
+      ? `En ${club.name} la hora de cancha cuesta desde ${priceFrom}${
+          club.maxPrice && club.maxPrice !== club.minPrice ? ` hasta ${formatCOP(club.maxPrice)}` : ''
+        }, según el tamaño de la cancha. Pagas directamente en el club.`
+      : `El precio depende de la cancha y el horario; lo ves antes de confirmar tu reserva. Pagas directamente en el club.`,
+  },
+  {
+    q: `¿Qué horario tiene ${club.name}?`,
+    a: hoursShort.length
+      ? `${club.name} abre ${hoursShort.map((h) => `${h.days} de ${h.time}`).join('; ')}. En Canchariane ves en tiempo real qué horas están libres.`
+      : `Consulta en Canchariane las horas libres en tiempo real.`,
+  },
+  {
+    q: `¿Cómo reservo en ${club.name}?`,
+    a: `Toca "Reservar", elige la cancha y una hora libre, y confirma con tu nombre, celular y correo. Recibes un código de reserva al instante, sin llamar.`,
+  },
+];
+
+const clubId = `${abs(path)}#club`;
+const photos = clubPhotos(club.slug, club.name);
+const gallery = photos.slice(0, 5);
+// URLs absolutas de fotos optimizadas (JPG 1200px) para el schema y Google Imágenes
+const schemaImages = await Promise.all(
+  photos.slice(0, 4).map(async (p) => abs((await getImage({ src: p.src, width: 1200, format: 'jpg' })).src)),
+);
+const aboutText =
+  `es un club de canchas sintéticas en ${club.city}` +
+  (club.address ? `, ubicado en ${club.address.split(',')[0].trim()}` : '') +
+  `. Cuenta con ${club.courts.length} ${club.courts.length === 1 ? 'cancha' : 'canchas'} de grama sintética para ${formats}` +
+  (club.hasLighting ? ', con iluminación para jugar de noche' : '') +
+  (club.hasCovered ? ' y opción techada para los días de lluvia' : '') +
+  '.';
+---
+<BaseLayout
+  title={title}
+  description={description}
+  ogImage={`/og/clubes/${club.slug}.png`}
+  mobileCta={{ href: appLink(`/c/${club.slug}`, { campaign: 'sticky-club', content: club.slug }), label: `Reservar en ${club.name}` }}
+  breadcrumbs={crumbs}
+  schema={[
+    webPageSchema({ path, name: title, description, about: clubId }),
+    clubSchema(club, schemaImages),
+    faqSchema(faqs),
+  ]}
+>
+  <!-- ============ HERO DEL CLUB ============ -->
+  <section class="relative isolate overflow-hidden border-b border-line">
+    <div class="pitch-grid absolute inset-0 -z-10" aria-hidden="true"></div>
+    <div class="mx-auto max-w-7xl px-4 pt-8 pb-12 sm:px-6 lg:px-8 lg:pt-12 lg:pb-16">
+      <Breadcrumbs items={crumbs} />
+
+      <div class="mt-8 flex flex-wrap gap-2">
+        {club.formats.map((f) => (
+          <span class="skew-tag rounded-lg bg-ink px-3 py-1.5 text-xs font-extrabold text-white uppercase"><span>{f}</span></span>
+        ))}
+        {club.hasLighting && <span class="chip"><Icon name="light" class="size-3.5" /> Iluminación</span>}
+        {club.hasCovered && <span class="chip"><Icon name="roof" class="size-3.5" /> Techada</span>}
+      </div>
+
+      <h1 class="display mt-5 text-[clamp(2.4rem,10vw,5.5rem)]">
+        {club.name}
+        <span class="mt-2 block text-[0.42em] text-electric">Cancha sintética en {club.city}</span>
+      </h1>
+
+      {club.address && (
+        <div class="mt-5 flex items-start gap-2 text-lg text-ink-soft">
+          <Icon name="pin" class="mt-1 size-5 shrink-0 text-electric" />
+          <address class="not-italic">{club.address}</address>
+        </div>
+      )}
+
+      <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+        <a href={reserveUrl} class="btn btn-primary text-base sm:!px-8">
+          Reservar en {club.name} <Icon name="arrow" class="size-5" />
+        </a>
+        {mapsUrl && (
+          <a href={mapsUrl} target="_blank" rel="noopener" class="btn btn-ghost text-base">
+            <Icon name="pin" class="size-5" /> Cómo llegar
+          </a>
+        )}
+        {club.phone && (
+          <a href={`tel:${club.phone}`} class="btn btn-ghost text-base">Llamar al club</a>
+        )}
+      </div>
+    </div>
+  </section>
+
+  {photos.length > 0 && (
+    <section class="mx-auto max-w-7xl px-4 pt-10 sm:px-6 lg:px-8" aria-label={`Fotos de ${club.name}`}>
+      <div class:list={[
+        '-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:overflow-visible sm:px-0 sm:pb-0',
+        gallery.length === 1 && 'sm:grid-cols-1',
+        gallery.length === 2 && 'sm:grid-cols-2',
+        gallery.length === 3 && 'sm:grid-cols-3 sm:grid-rows-2',
+        gallery.length >= 4 && 'sm:grid-cols-4 sm:grid-rows-2',
+      ]}>
+        {gallery.map((p, i) => (
+          <figure class:list={[
+            'relative shrink-0 snap-start overflow-hidden rounded-3xl bg-mist',
+            gallery.length === 1 ? 'w-full aspect-[16/9] sm:aspect-[21/9]' : 'w-[85%] aspect-[4/3] sm:w-auto sm:aspect-auto',
+            gallery.length === 2 && 'sm:min-h-80',
+            gallery.length >= 3 && (i === 0 ? 'sm:col-span-2 sm:row-span-2 sm:min-h-96' : 'sm:min-h-44'),
+            gallery.length === 4 && i === 3 && 'sm:col-span-2',
+          ]}>
+            <Image
+              src={p.src}
+              alt={p.alt}
+              widths={i === 0 ? [480, 800, 1200] : [400, 640]}
+              sizes={i === 0 ? '(min-width: 640px) 50vw, 85vw' : '(min-width: 640px) 25vw, 85vw'}
+              class="absolute inset-0 h-full w-full object-cover"
+              loading={i === 0 ? 'eager' : 'lazy'}
+              fetchpriority={i === 0 ? 'high' : 'auto'}
+            />
+          </figure>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- ============ DETALLE ============ -->
+  <div class="mx-auto grid max-w-7xl gap-8 px-4 py-14 sm:px-6 lg:grid-cols-12 lg:gap-12 lg:px-8 lg:py-20">
+    <div class="space-y-14 lg:col-span-7">
+      <section aria-labelledby="canchas-club">
+        <h2 id="canchas-club" class="display text-3xl sm:text-4xl">Canchas</h2>
+        <ul class="mt-6 grid gap-3">
+          {club.courts.map((c) => (
+            <li class="card flex items-center gap-4 p-4 sm:p-5">
+              <span class="grid size-14 shrink-0 place-items-center rounded-2xl bg-electric text-white">
+                <span class="display text-lg">{c.format.toUpperCase()}</span>
+              </span>
+              <div class="min-w-0 flex-1">
+                <h3 class="truncate font-bold capitalize">{c.name}</h3>
+                <p class="mt-0.5 text-sm text-muted">
+                  {c.formatLabel} · {c.surface}{c.lighting ? ' · Iluminación' : ''}{c.covered ? ' · Techada' : ''}
+                </p>
+              </div>
+              {c.price && (
+                <p class="shrink-0 text-right">
+                  <span class="display-tight block text-lg">{formatCOP(c.price)}</span>
+                  <span class="text-xs text-muted">por hora</span>
+                </p>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section aria-labelledby="sobre-club">
+        <h2 id="sobre-club" class="display text-3xl sm:text-4xl">Sobre {club.name}</h2>
+        <div class="mt-6 space-y-4 text-lg leading-relaxed text-ink-soft">
+          <p><strong class="text-ink">{club.name}</strong> {aboutText}</p>
+          <p>
+            Con Canchariane ves en tiempo real qué horas están libres en {club.name} y reservas en segundos desde el celular, sin
+            llamar. Al confirmar recibes un código de reserva y pagas directamente en el club.
+          </p>
+        </div>
+      </section>
+
+      <section aria-labelledby="faq-club">
+        <h2 id="faq-club" class="display text-3xl sm:text-4xl">Preguntas frecuentes</h2>
+        <div class="mt-6"><FaqList faqs={faqs} /></div>
+      </section>
+    </div>
+
+    <!-- Lateral -->
+    <aside class="lg:col-span-5" aria-label="Información del club">
+      <div class="space-y-4 lg:sticky lg:top-24">
+        <div class="cut-br overflow-hidden rounded-[var(--radius-card)] bg-ink p-6 text-white sm:p-8">
+          {priceFrom && (
+            <>
+              <p class="text-xs font-bold tracking-wider text-pitch uppercase">Desde</p>
+              <p class="display mt-1 text-5xl">{priceFrom}</p>
+              <p class="mt-1 text-sm text-white/60">por hora · pagas en el club</p>
+            </>
+          )}
+          <a href={reserveUrl} class="btn btn-pitch mt-6 w-full text-base">
+            Ver horarios libres <Icon name="arrow" class="size-5" />
+          </a>
+        </div>
+
+        {club.hours.length > 0 && (
+          <section class="card p-6" aria-labelledby="horario-club">
+            <h2 id="horario-club" class="flex items-center gap-2 font-bold"><Icon name="clock" class="size-5 text-electric" /> Horario</h2>
+            <table class="mt-4 w-full text-sm">
+              <caption class="sr-only">Horario de atención de {club.name}</caption>
+              <tbody class="divide-y divide-line">
+                {club.hours.map((h) => (
+                  <tr>
+                    <th scope="row" class="py-2.5 text-left font-medium capitalize text-ink-soft">{DAY_LONG[h.day]}</th>
+                    <td class="py-2.5 text-right font-semibold tabular-nums">
+                      <time datetime={h.opens}>{formatTime(h.opens)}</time> – <time datetime={h.closes}>{formatTime(h.closes)}</time>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
+
+        {osm && (
+          <section class="card overflow-hidden" aria-labelledby="mapa-club">
+            <h2 id="mapa-club" class="sr-only">Ubicación de {club.name}</h2>
+            <!-- Fachada: el mapa (≈300 KB) solo se carga si la persona lo pide -->
+            <div class="relative h-60 bg-electric-50" data-map={osm} data-map-title={`Mapa de ubicación de ${club.name}`}>
+              <svg class="absolute inset-0 h-full w-full text-electric-100" viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                <g stroke="currentColor" stroke-width="10" fill="none" stroke-linecap="round">
+                  <path d="M-10 70 Q120 40 210 110 T420 90" /><path d="M60 -10 L130 250" /><path d="M300 -10 Q260 120 330 250" />
+                  <path d="M-10 190 Q160 160 420 200" stroke-width="6" />
+                </g>
+              </svg>
+              <span class="absolute top-1/2 left-1/2 grid size-12 -translate-x-1/2 -translate-y-full place-items-center rounded-full bg-electric text-white shadow-lg shadow-electric/40">
+                <Icon name="pin" class="size-6" />
+              </span>
+              <button type="button" class="btn btn-ghost absolute bottom-4 left-1/2 -translate-x-1/2 !min-h-11 text-sm shadow-md" data-map-load>
+                Ver mapa
+              </button>
+            </div>
+            {mapsUrl && (
+              <a href={mapsUrl} target="_blank" rel="noopener" class="flex min-h-12 items-center justify-between px-5 text-sm font-semibold hover:bg-mist">
+                Abrir en Google Maps <Icon name="arrowUpRight" class="size-4" />
+              </a>
+            )}
+          </section>
+        )}
+      </div>
+    </aside>
+  </div>
+
+  {others.length > 0 && (
+    <section class="border-t border-line bg-mist" aria-labelledby="otros-clubes">
+      <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+        <h2 id="otros-clubes" class="display text-3xl sm:text-4xl">Otras canchas en {club.city}</h2>
+        <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+          {others.slice(0, 3).map((c, i) => <ClubCard club={c} index={i + 1} />)}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <script>
+    document.querySelectorAll<HTMLElement>('[data-map]').forEach((box) => {
+      box.querySelector('[data-map-load]')?.addEventListener('click', () => {
+        const f = document.createElement('iframe');
+        f.src = box.dataset.map!;
+        f.title = box.dataset.mapTitle!;
+        f.className = 'absolute inset-0 h-full w-full border-0';
+        f.referrerPolicy = 'no-referrer';
+        box.replaceChildren(f);
+      });
+    });
+  </script>
+
+  <CtaBand campaign="club-final" title={`Reserva en <span class="text-pitch">${escapeHtml(club.name)}</span>`} />
+</BaseLayout>
