@@ -28,8 +28,60 @@ export const HIDDEN_CLUBS = (process.env.HIDDEN_CLUBS || env.HIDDEN_CLUBS || '')
   .map((s: string) => s.trim())
   .filter(Boolean);
 
-/** Mínimo de clubes en una ciudad para generar su página propia (evita páginas "delgadas"). */
-export const MIN_CLUBS_FOR_CITY_PAGE = 3;
+/**
+ * Mínimo de clubes en una ciudad para generar su página propia. Con 1 basta: la página de ciudad
+ * lleva texto propio (precios, formatos, preguntas) para no quedar "delgada", y llegar primero
+ * a "canchas en {ciudad}" en una ciudad nueva vale más que esperar a tener 3 clubes.
+ */
+export const MIN_CLUBS_FOR_CITY_PAGE = 1;
+
+/**
+ * Departamento de cada ciudad, para la dirección de los datos estructurados.
+ * Las claves van sin tildes y en minúscula (ver regionFor). Agrega aquí cada ciudad nueva;
+ * si no está, se usa SITE.region y el build avisa en consola.
+ */
+const CITY_REGION: Record<string, string> = {
+  // Risaralda
+  pereira: 'Risaralda',
+  dosquebradas: 'Risaralda',
+  'santa rosa de cabal': 'Risaralda',
+  'santa rosa': 'Risaralda',
+  'la virginia': 'Risaralda',
+  'la celia': 'Risaralda',
+  marsella: 'Risaralda',
+  // Caldas
+  manizales: 'Caldas',
+  villamaria: 'Caldas',
+  chinchina: 'Caldas',
+  // Quindío
+  armenia: 'Quindío',
+  calarca: 'Quindío',
+  montenegro: 'Quindío',
+  'la tebaida': 'Quindío',
+  circasia: 'Quindío',
+  // Valle del Cauca
+  cartago: 'Valle del Cauca',
+  cali: 'Valle del Cauca',
+  // Grandes ciudades
+  bogota: 'Bogotá D. C.',
+  medellin: 'Antioquia',
+};
+
+const cityKey = (city: string) =>
+  city.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+
+const warned = new Set<string>();
+/** Departamento de una ciudad. `fromApi` tiene prioridad si la API llega a enviarlo. */
+export function regionFor(city: string, fromApi?: string | null): string {
+  if (fromApi?.trim()) return fromApi.trim();
+  const region = CITY_REGION[cityKey(city)];
+  if (region) return region;
+  if (!warned.has(city)) {
+    warned.add(city);
+    console.warn(`[clubs] Ciudad sin departamento en CITY_REGION: "${city}". Se usa ${SITE.region}.`);
+  }
+  return SITE.region;
+}
 
 type Utm = { campaign: string; content?: string };
 

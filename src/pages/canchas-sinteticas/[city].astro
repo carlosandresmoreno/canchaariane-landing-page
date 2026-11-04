@@ -1,47 +1,102 @@
 ---
 /**
- * Página por ciudad. Solo se genera si la ciudad tiene al menos MIN_CLUBS_FOR_CITY_PAGE clubes
- * (las páginas con 1 club son "contenido delgado" y perjudican el SEO).
+ * Página por ciudad ("canchas sintéticas en Dosquebradas").
+ * Se genera para cada ciudad con al menos MIN_CLUBS_FOR_CITY_PAGE clubes, pero solo cuando hay
+ * 2 o más ciudades: con una sola, duplicaría /canchas/ (canibalización).
+ * Para no ser "contenido delgado" con 1 club, lleva texto propio de la ciudad: tabla de precios,
+ * preguntas frecuentes (con su JSON-LD) y enlaces a las otras ciudades.
  */
 import type { GetStaticPaths } from 'astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import ClubCard from '../../components/ClubCard.astro';
 import CtaBand from '../../components/CtaBand.astro';
+import FaqList from '../../components/FaqList.astro';
+import Icon from '../../components/Icon.astro';
+import SectionHead from '../../components/SectionHead.astro';
 import { getClubs, stats, formatCOP, citySlug, type Club } from '../../lib/clubs';
-import { MIN_CLUBS_FOR_CITY_PAGE } from '../../lib/config';
-import { clubListSchema, webPageSchema } from '../../lib/schema';
+import { MIN_CLUBS_FOR_CITY_PAGE, escapeHtml } from '../../lib/config';
+import { clubListSchema, clubPath, faqSchema, webPageSchema } from '../../lib/schema';
 
 export const getStaticPaths = (async () => {
   const clubs = await getClubs();
   const byCity = Map.groupBy(clubs, (c) => c.city);
-  // Con una sola ciudad, esta página duplicaría /canchas/ (canibalización): no se genera.
   if (byCity.size < 2) return [];
-  return [...byCity.entries()]
-    .filter(([, list]) => list.length >= MIN_CLUBS_FOR_CITY_PAGE)
-    .map(([city, list]) => ({ params: { city: citySlug(city) }, props: { city, clubs: list } }));
+  const cities = [...byCity.entries()].filter(([, list]) => list.length >= MIN_CLUBS_FOR_CITY_PAGE);
+  return cities.map(([city, list]) => ({
+    params: { city: citySlug(city) },
+    props: { city, clubs: list, otherCities: cities.map(([c]) => c).filter((c) => c !== city) },
+  }));
 }) satisfies GetStaticPaths;
 
-interface Props { city: string; clubs: Club[] }
-const { city, clubs } = Astro.props;
+interface Props { city: string; clubs: Club[]; otherCities: string[] }
+const { city, clubs, otherCities } = Astro.props;
 const s = stats(clubs);
+const region = clubs[0].region;
+const one = s.clubs === 1;
+const formatsText = s.formats.join(', ').toLowerCase() || 'fútbol';
+const lit = clubs.filter((c) => c.hasLighting);
 const path = `/canchas-sinteticas/${citySlug(city)}/`;
 const crumbs = [
   { name: 'Inicio', path: '/' },
   { name: 'Canchas', path: '/canchas/' },
   { name: city, path },
 ];
-const title = `Canchas Sintéticas en ${city}: Precios`;
-const description = `${s.clubs} clubes con ${s.courts} canchas sintéticas en ${city}${
+const title = `Canchas Sintéticas en ${city}: Precios y Reservas`;
+const description = `${one ? '1 club' : `${s.clubs} clubes`} con ${s.courts} ${s.courts === 1 ? 'cancha sintética' : 'canchas sintéticas'} en ${city}, ${region}${
   s.minPrice ? ` desde ${formatCOP(s.minPrice)}/hora` : ''
-}. ${s.formats.join(', ')}. Compara y reserva en línea sin llamar.`;
+}. ${s.formats.join(', ')}. Mira horarios libres y reserva en línea sin llamar.`;
+
+const names = (list: Club[]) => {
+  const n = list.map((c) => c.name);
+  return n.length > 1 ? `${n.slice(0, -1).join(', ')} y ${n.at(-1)}` : (n[0] ?? '');
+};
+const priceRange = (c: Club) =>
+  c.minPrice === null
+    ? 'Consultar'
+    : c.maxPrice !== null && c.maxPrice !== c.minPrice
+      ? `${formatCOP(c.minPrice)} – ${formatCOP(c.maxPrice)}`
+      : formatCOP(c.minPrice);
+
+// Preguntas armadas con datos reales de la ciudad. Visibles y en JSON-LD (deben coincidir).
+const faqs = [
+  ...(s.minPrice
+    ? [{
+        q: `¿Cuánto cuesta alquilar una cancha sintética en ${city}?`,
+        a: `En ${city} el alquiler de una cancha sintética cuesta desde ${formatCOP(s.minPrice)} la hora. ${clubs
+          .filter((c) => c.minPrice !== null)
+          .map((c) => `En ${c.name}: ${priceRange(c)} por hora`)
+          .join('. ')}. El precio puede cambiar según el tamaño de la cancha y la hora.`,
+      }]
+    : []),
+  {
+    q: `¿Dónde hay canchas de fútbol en ${city}?`,
+    a: `${one ? 'El club' : 'Los clubes'} de ${city} en Canchariane ${one ? 'es' : 'son'} ${clubs
+      .map((c) => `${c.name}${c.address ? ` (${c.address})` : ''}`)
+      .join(', ')}. Tienen canchas de ${formatsText}.`,
+  },
+  {
+    q: `¿Hay canchas con iluminación para jugar de noche en ${city}?`,
+    a: lit.length
+      ? `Sí. ${names(lit)} ${lit.length === 1 ? 'tiene' : 'tienen'} canchas con iluminación, así que puedes reservar en horario nocturno.`
+      : `Por ahora los clubes de ${city} en Canchariane no reportan canchas con iluminación. Revisa el horario de cada club antes de reservar.`,
+  },
+  {
+    q: `¿Cómo reservo una cancha de fútbol en ${city}?`,
+    a: `Elige el club, mira los horarios libres en tiempo real y reserva en línea en Canchariane, sin llamar ni escribir por WhatsApp. La reserva queda confirmada al instante.`,
+  },
+];
 ---
 
 <BaseLayout
   title={title}
   description={description}
   breadcrumbs={crumbs}
-  schema={[webPageSchema({ path, name: title, description }), clubListSchema(clubs, `Canchas sintéticas en ${city}`)]}
+  schema={[
+    webPageSchema({ path, name: title, description }),
+    clubListSchema(clubs, `Canchas sintéticas en ${city}`),
+    faqSchema(faqs),
+  ]}
 >
   <section class="relative isolate overflow-hidden border-b border-line">
     <div class="pitch-grid absolute inset-0 -z-10" aria-hidden="true"></div>
@@ -51,8 +106,9 @@ const description = `${s.clubs} clubes con ${s.courts} canchas sintéticas en ${
         Canchas sintéticas <span class="block text-electric">en {city}</span>
       </h1>
       <p class="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft">
-        {s.clubs} clubes y {s.courts} canchas de grama sintética en {city} para {s.formats.join(', ').toLowerCase()}
-        {s.minPrice ? `, desde ${formatCOP(s.minPrice)} la hora` : ''}. Elige la más cercana y reserva con horarios en tiempo real.
+        {one ? '1 club' : `${s.clubs} clubes`} y {s.courts} {s.courts === 1 ? 'cancha' : 'canchas'} de grama sintética en {city}, {region},
+        para {formatsText}{s.minPrice ? `, desde ${formatCOP(s.minPrice)} la hora` : ''}.
+        {one ? 'Mira sus horarios libres' : 'Elige la más cercana'} y reserva tu cancha de fútbol en línea, con horarios en tiempo real.
       </p>
     </div>
   </section>
@@ -61,6 +117,59 @@ const description = `${s.clubs} clubes con ${s.courts} canchas sintéticas en ${
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
       {clubs.map((club, i) => <ClubCard club={club} index={i} headingLevel="h2" />)}
     </div>
+  </section>
+
+  <section class="bg-mist py-14 lg:py-20" aria-labelledby="precios-title">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <SectionHead
+        id="precios-title"
+        eyebrow={`Precios en ${escapeHtml(city)}`}
+        title={`Cuánto cuesta una cancha en <span class='text-electric'>${escapeHtml(city)}</span>`}
+        lead="Precio por hora de cada club, según lo publicado en la app de reservas."
+      />
+      <div class="mt-8 overflow-x-auto rounded-2xl border border-line bg-white">
+        <table class="w-full min-w-[36rem] text-left text-sm sm:text-base">
+          <thead class="border-b border-line text-ink-soft">
+            <tr>
+              <th scope="col" class="px-4 py-3 font-semibold">Club</th>
+              <th scope="col" class="px-4 py-3 font-semibold">Formatos</th>
+              <th scope="col" class="px-4 py-3 font-semibold">Precio por hora</th>
+              <th scope="col" class="px-4 py-3 font-semibold">Iluminación</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-line">
+            {clubs.map((c) => (
+              <tr>
+                <th scope="row" class="px-4 py-3 font-bold text-ink">
+                  <a class="underline-offset-4 hover:underline" href={clubPath(c.slug)}>{c.name}</a>
+                  {c.address && <span class="block text-sm font-normal text-ink-soft">{c.address}</span>}
+                </th>
+                <td class="px-4 py-3">{c.formats.join(', ') || '—'}</td>
+                <td class="px-4 py-3 font-semibold">{priceRange(c)}</td>
+                <td class="px-4 py-3">{c.hasLighting ? 'Sí' : 'No'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-4xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20" aria-labelledby="faq-title">
+    <SectionHead id="faq-title" eyebrow="Preguntas frecuentes" title={`Canchas en ${escapeHtml(city)}: lo que más preguntan`} />
+    <div class="mt-8">
+      <FaqList faqs={faqs} />
+    </div>
+    {otherCities.length > 0 && (
+      <nav class="mt-12" aria-label="Otras ciudades">
+        <p class="font-bold text-ink">Canchas sintéticas en otras ciudades</p>
+        <ul class="mt-3 flex flex-wrap gap-2">
+          {otherCities.map((c) => (
+            <li><a class="chip hover:border-ink" href={`/canchas-sinteticas/${citySlug(c)}/`}><Icon name="pin" class="size-3.5" />{c}</a></li>
+          ))}
+        </ul>
+      </nav>
+    )}
   </section>
 
   <CtaBand campaign={`ciudad-${citySlug(city)}`} />

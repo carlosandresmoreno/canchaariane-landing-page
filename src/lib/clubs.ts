@@ -4,7 +4,7 @@
  * (se actualiza con `npm run sync:clubs`). Así un build nunca rompe la landing.
  */
 import snapshot from '../data/clubs.snapshot.json';
-import { API_URL, HIDDEN_CLUBS } from './config';
+import { API_URL, HIDDEN_CLUBS, regionFor } from './config';
 
 // ---------- Tipos crudos de la API ----------
 export interface ApiCourt {
@@ -31,6 +31,8 @@ export interface ApiClubDetail {
   latitude: number | null;
   longitude: number | null;
   city: string | null;
+  /** Departamento. Hoy la API no lo envía; si lo agrega, se usa en lugar de CITY_REGION. */
+  department?: string | null;
   courts: ApiCourt[];
   business_hours: ApiHours[];
   [k: string]: unknown;
@@ -57,6 +59,7 @@ export interface Club {
   slug: string;
   name: string;
   city: string;
+  region: string; // departamento, ej. "Risaralda"
   address: string | null;
   lat: number | null;
   lng: number | null;
@@ -141,10 +144,12 @@ function normalize(d: ApiClubDetail): Club {
   const formats = [...new Set(courts.map((c) => c.formatLabel))].sort(
     (a, b) => (parseInt(a.replace(/\D/g, '')) || 0) - (parseInt(b.replace(/\D/g, '')) || 0),
   );
+  const city = d.city?.trim() || 'Pereira';
   return {
     slug: d.slug,
     name: d.name.replace(/\b\p{Ll}/gu, (ch, i: number) => (i === 0 ? ch.toUpperCase() : ch)),
-    city: d.city?.trim() || 'Pereira',
+    city,
+    region: regionFor(city, d.department),
     address: d.address?.trim() || null,
     lat: d.latitude ?? null,
     lng: d.longitude ?? null,

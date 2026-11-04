@@ -70,7 +70,7 @@ export function clubSchema(club: Club, photoUrls: string[] = []) {
       '@type': 'PostalAddress',
       ...(club.address ? { streetAddress: club.address.split(',')[0].trim() } : {}),
       addressLocality: club.city,
-      addressRegion: SITE.region,
+      addressRegion: club.region,
       addressCountry: SITE.country,
     },
     ...(club.lat !== null && club.lng !== null
