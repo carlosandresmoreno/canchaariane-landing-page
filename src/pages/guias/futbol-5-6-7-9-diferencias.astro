@@ -1,0 +1,86 @@
+---
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import { getClubs, formatCOP } from '../../lib/clubs';
+import { clubPath } from '../../lib/schema';
+
+const clubs = await getClubs();
+// Qué formatos hay hoy en Pereira y en qué clubes
+const offer = new Map<string, { name: string; slug: string; price: number | null }[]>();
+for (const c of clubs)
+  for (const k of c.courts) {
+    const list = offer.get(k.formatLabel) ?? [];
+    if (!list.some((x) => x.slug === c.slug)) list.push({ name: c.name, slug: c.slug, price: k.price });
+    offer.set(k.formatLabel, list);
+  }
+const available = [...offer.entries()].sort((a, b) => parseInt(a[0].replace(/\D/g, '')) - parseInt(b[0].replace(/\D/g, '')));
+
+const formats = [
+  { f: 'Fútbol 5', team: 5, total: 10, size: '25–40 × 15–25 m', ideal: 'Grupos pequeños, juego rápido y mucho contacto con el balón.' },
+  { f: 'Fútbol 6', team: 6, total: 12, size: '35–45 × 20–30 m', ideal: 'Cuando son un poco más de 10 y quieren algo más de espacio.' },
+  { f: 'Fútbol 7', team: 7, total: 14, size: '50–65 × 30–45 m', ideal: 'Partidos con más táctica; muy usado en torneos amateur.' },
+  { f: 'Fútbol 8', team: 8, total: 16, size: '55–70 × 35–50 m', ideal: 'Grupos grandes que no llegan a 18.' },
+  { f: 'Fútbol 9', team: 9, total: 18, size: '60–75 × 40–55 m', ideal: 'Lo más parecido a una cancha completa; ideal para empresas y torneos.' },
+];
+
+const faqs = [
+  { q: '¿Cuántos jugadores hay en fútbol 5?', a: 'Cinco por equipo, incluido el arquero: 10 jugadores en la cancha.' },
+  { q: '¿Cuántos jugadores hay en fútbol 9?', a: 'Nueve por equipo, incluido el arquero: 18 jugadores en la cancha.' },
+  {
+    q: '¿Cuánto mide una cancha de fútbol 5?',
+    a: 'No hay una medida única: las canchas sintéticas de fútbol 5 suelen medir entre 25 y 40 metros de largo y entre 15 y 25 de ancho, según el club.',
+  },
+];
+---
+
+<ArticleLayout slug="futbol-5-6-7-9-diferencias" faqs={faqs}>
+  <p class="callout">
+    <strong>Respuesta corta:</strong> el número indica cuántos jugadores hay por equipo, incluido el arquero. Fútbol 5 = 10 en la cancha,
+    fútbol 6 = 12, fútbol 7 = 14, fútbol 8 = 16 y fútbol 9 = 18.
+  </p>
+
+  <h2>Tabla comparativa</h2>
+  <div class="table-wrap">
+    <table>
+      <caption class="sr-only">Jugadores y tamaño aproximado por formato</caption>
+      <thead>
+        <tr><th scope="col">Formato</th><th scope="col">Por equipo</th><th scope="col">Total</th><th scope="col">Tamaño aprox.</th></tr>
+      </thead>
+      <tbody>
+        {formats.map((x) => (
+          <tr><td class="font-semibold text-ink">{x.f}</td><td>{x.team}</td><td>{x.total}</td><td class="whitespace-nowrap">{x.size}</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p class="text-base text-muted">
+    Las medidas son aproximadas: en canchas sintéticas cada club define su tamaño según el terreno. Lo importante para elegir es el número de jugadores.
+  </p>
+
+  <h2>¿Cuál conviene según tu grupo?</h2>
+  <ul>
+    {formats.map((x) => (
+      <li><strong>{x.f} ({x.total} jugadores):</strong> {x.ideal}</li>
+    ))}
+  </ul>
+  <p>
+    Si están justos de gente, mejor una cancha más pequeña: en una cancha grande con pocos jugadores el partido se vuelve de correr y
+    no de jugar.
+  </p>
+
+  <h2>¿Qué formatos hay en Pereira?</h2>
+  <p>Estos son los formatos que puedes reservar hoy en línea en Pereira con Canchariane:</p>
+  <ul>
+    {available.map(([label, list]) => (
+      <li>
+        <strong>{label}:</strong>{' '}
+        {list.map((c, i) => (
+          <>{i > 0 && ', '}<a href={clubPath(c.slug)}>{c.name}</a>{c.price ? ` (${formatCOP(c.price)}/h)` : ''}</>
+        ))}
+      </li>
+    ))}
+  </ul>
+  <p>
+    ¿Quieres saber cuánto paga cada jugador según el formato? Míralo en la guía de
+    <a href="/guias/precio-alquiler-cancha-sintetica-pereira/">precios de canchas sintéticas en Pereira</a>.
+  </p>
+</ArticleLayout>

@@ -154,3 +154,30 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Tipografía de lectura para las guías */
+@layer components {
+  .prose-article {
+    @apply text-lg leading-relaxed text-ink-soft;
+  }
+  .prose-article > * + * { margin-top: 1.25rem; }
+  .prose-article h2 {
+    @apply mt-14 text-[1.65rem] text-ink sm:text-3xl;
+    font-family: var(--font-display);
+    font-stretch: 112%;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    scroll-margin-top: 6rem;
+  }
+  .prose-article h3 { @apply mt-8 text-xl font-bold text-ink; }
+  .prose-article strong { @apply font-semibold text-ink; }
+  .prose-article a:not(.btn) { @apply font-semibold text-electric underline decoration-electric/30 underline-offset-4 hover:decoration-electric; }
+  .prose-article ul { @apply list-disc space-y-2 pl-6 marker:text-pitch-700; }
+  .prose-article ol { @apply list-decimal space-y-2 pl-6 marker:font-bold marker:text-electric; }
+  .prose-article .table-wrap { @apply -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0; }
+  .prose-article table { @apply w-full min-w-[34rem] border-collapse text-base; }
+  .prose-article th { @apply border-b-2 border-ink py-3 pr-4 text-left text-xs font-bold tracking-wider text-ink uppercase; }
+  .prose-article td { @apply border-b border-line py-3 pr-4 align-top; }
+  .prose-article .callout { @apply rounded-3xl border border-pitch/40 bg-pitch-50 p-5 text-ink sm:p-6; }
+}

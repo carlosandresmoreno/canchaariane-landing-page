@@ -1,0 +1,89 @@
+---
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import { getClubs, formatCOP } from '../../lib/clubs';
+import { guidePath } from '../../lib/guides';
+import { appLink } from '../../lib/config';
+
+const clubs = await getClubs();
+const f5 = clubs
+  .flatMap((c) => c.courts.filter((k) => k.format.startsWith('5') && k.price).map((k) => k.price!))
+  .sort((a, b) => a - b)[0];
+const anyPrice = f5 ?? clubs.map((c) => c.minPrice).filter((p): p is number => p !== null).sort((a, b) => a - b)[0];
+const perHead = (n: number) => (anyPrice ? formatCOP(Math.ceil(anyPrice / n / 100) * 100) : null);
+
+const faqs = [
+  {
+    q: '¿Cuántos jugadores se necesitan para fútbol 5?',
+    a: 'Diez en total: cinco por equipo, incluido el arquero. Conviene invitar a uno o dos más como suplentes por si alguien cancela.',
+  },
+  {
+    q: '¿Qué zapatos se usan en cancha sintética?',
+    a: 'Guayos de taco corto (multitaco o tipo turf) o zapatillas para grama sintética. Muchos clubes no permiten guayos de tacos altos o de aluminio porque dañan la grama.',
+  },
+  {
+    q: '¿Cuánto dura un partido de fútbol 5?',
+    a: 'Lo normal es reservar una hora. Muchos grupos juegan dos tiempos de 25 minutos con un descanso corto en el medio.',
+  },
+];
+---
+
+<ArticleLayout slug="como-organizar-partido-futbol-5" faqs={faqs}>
+  <p>
+    Armar el partido de la semana no debería costar más trabajo que jugarlo. Esta es la forma más rápida de pasar del "¿jugamos?" en
+    el grupo de WhatsApp a estar en la cancha.
+  </p>
+
+  <h2>1. Confirma cuántos son</h2>
+  <p>
+    Para <strong>fútbol 5 necesitas 10 jugadores</strong> (5 por equipo, con arquero). Si son entre 12 y 14, mira una cancha de fútbol 6
+    o 7. Si llegan a 18, una de fútbol 9. En la <a href={guidePath('futbol-5-6-7-9-diferencias')}>guía de formatos</a> está la
+    tabla completa.
+  </p>
+  <p>Consejo: confirma a uno o dos de más. Siempre hay alguien que cancela a última hora.</p>
+
+  <h2>2. Elige día, hora y cancha</h2>
+  <p>
+    Las noches entre semana y los fines de semana se llenan primero. Si tu grupo es flexible, las primeras horas de la tarde suelen estar
+    más libres. Revisa la <a href="/canchas/">lista de canchas sintéticas en Pereira</a> para comparar ubicación, precio e iluminación.
+  </p>
+
+  <h2>3. Reserva antes de avisarle a todos</h2>
+  <p>
+    El error más común: confirmar a 10 personas y luego descubrir que no hay cancha. En Canchariane ves las
+    <strong>horas libres en tiempo real</strong>, eliges una y la reserva queda confirmada al instante, sin llamar. Recibes un código de
+    reserva que puedes compartir en el grupo.
+  </p>
+  <p><a href={appLink('/', { campaign: 'guia-organizar-texto' })}>Ver horas libres ahora →</a></p>
+
+  <h2>4. Divide la cuenta desde el principio</h2>
+  <p>Deja claro cuánto pone cada uno antes del partido. La cuenta es: precio de la hora ÷ número de jugadores.</p>
+  {anyPrice && (
+    <div class="table-wrap">
+      <table>
+        <caption class="sr-only">Cuánto paga cada jugador</caption>
+        <thead><tr><th scope="col">Jugadores</th><th scope="col">Cada uno paga (cancha de {formatCOP(anyPrice)})</th></tr></thead>
+        <tbody>
+          <tr><td>10 (justos)</td><td class="font-semibold text-ink">{perHead(10)}</td></tr>
+          <tr><td>11 (con un suplente)</td><td class="font-semibold text-ink">{perHead(11)}</td></tr>
+          <tr><td>12 (con dos suplentes)</td><td class="font-semibold text-ink">{perHead(12)}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  )}
+  <p>El pago se hace en el club el día del partido, así que basta con que uno recoja la plata y pague al llegar.</p>
+
+  <h2>5. Qué llevar</h2>
+  <ul>
+    <li><strong>Calzado para sintética:</strong> guayos de taco corto (multitaco o turf) o zapatillas para grama. Evita los tacos altos.</li>
+    <li><strong>Dos colores de camiseta</strong> o petos, para que los equipos se distingan.</li>
+    <li><strong>Agua</strong> e hidratación: una hora de fútbol 5 es intensa.</li>
+    <li><strong>Espinilleras</strong> si el partido es fuerte.</li>
+    <li>El <strong>código de reserva</strong>, para mostrarlo al llegar.</li>
+  </ul>
+
+  <h2>6. Si alguien cancela</h2>
+  <p>
+    Si el partido no se da, cancela la reserva con tu código para que la cancha quede libre para otro grupo. Y si te sobra un cupo,
+    los suplentes del paso 1 te salvan.
+  </p>
+</ArticleLayout>

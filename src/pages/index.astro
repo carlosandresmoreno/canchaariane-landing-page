@@ -13,6 +13,7 @@ import { getClubs, stats, formatCOP } from '../lib/clubs';
 import { buildFaqs } from '../lib/faqs';
 import { appLink, SITE } from '../lib/config';
 import { clubListSchema, faqSchema, webPageSchema } from '../lib/schema';
+import { GUIDES, guidePath } from '../lib/guides';
 
 const clubs = await getClubs();
 const s = stats(clubs);
@@ -267,6 +268,27 @@ const steps = [
         ))}
       </ul>
     </div>
+  </section>
+
+  <!-- ============ GUÍAS ============ -->
+  <section class="mx-auto max-w-7xl px-4 pt-20 sm:px-6 lg:px-8 lg:pt-28" aria-labelledby="guias-title">
+    <div class="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+      <SectionHead id="guias-title" eyebrow="Guías" title="Antes del <span class='text-electric'>partido</span>" />
+      <a href="/guias/" class="btn btn-ghost shrink-0 self-start md:self-auto">Todas las guías <Icon name="arrow" class="size-4" /></a>
+    </div>
+    <ul class="mt-10 grid gap-4 md:grid-cols-3 lg:gap-6">
+      {GUIDES.map((g) => (
+        <li>
+          <a href={guidePath(g.slug)} class="card group flex h-full flex-col p-6 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-electric/10">
+            <span class="eyebrow text-electric">{g.eyebrow}</span>
+            <h3 class="display-tight mt-3 text-xl text-ink">{g.title}</h3>
+            <span class="mt-auto inline-flex items-center gap-1.5 pt-5 text-sm font-semibold text-electric">
+              Leer guía <Icon name="arrow" class="size-4 transition group-hover:translate-x-1" />
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
   </section>
 
   <!-- ============ FAQ ============ -->

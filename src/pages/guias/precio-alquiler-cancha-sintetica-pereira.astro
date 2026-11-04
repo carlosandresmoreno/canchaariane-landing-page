@@ -1,0 +1,109 @@
+---
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import { getClubs, formatCOP, stats } from '../../lib/clubs';
+import { clubPath } from '../../lib/schema';
+import { appLink } from '../../lib/config';
+
+const clubs = await getClubs();
+const s = stats(clubs);
+const year = new Date().getFullYear();
+
+// Una fila por club + formato, con precio por jugador (2 equipos completos).
+const rows = clubs
+  .flatMap((c) =>
+    [...new Map(c.courts.filter((k) => k.price).map((k) => [k.format, k])).values()].map((k) => {
+      const perTeam = parseInt(k.format) || 5;
+      return { club: c, label: k.formatLabel, price: k.price!, players: perTeam * 2, lighting: k.lighting, covered: k.covered };
+    }),
+  )
+  .sort((a, b) => a.price - b.price);
+
+const prices = rows.map((r) => r.price);
+const min = prices.length ? Math.min(...prices) : null;
+const max = prices.length ? Math.max(...prices) : null;
+const cheapest = rows[0];
+
+const faqs = [
+  {
+    q: `¿Cuál es la cancha sintética más económica en ${'Pereira'}?`,
+    a: cheapest
+      ? `Hoy, en Canchariane, la opción más económica es ${cheapest.club.name}: ${cheapest.label} desde ${formatCOP(cheapest.price)} la hora, unos ${formatCOP(Math.ceil(cheapest.price / cheapest.players / 100) * 100)} por jugador.`
+      : 'Consulta los clubes disponibles en Canchariane para ver el precio actualizado.',
+  },
+  {
+    q: '¿El precio es por persona o por cancha?',
+    a: 'El precio es por la cancha completa, por una hora. Lo normal es dividirlo entre todos los jugadores del partido.',
+  },
+  {
+    q: '¿Se paga por adelantado?',
+    a: 'No. Reservas en línea sin pagar nada y pagas directamente en el club el día del partido.',
+  },
+];
+---
+
+<ArticleLayout slug="precio-alquiler-cancha-sintetica-pereira" faqs={faqs}>
+  {min !== null && (
+    <p class="callout">
+      <strong>Respuesta corta:</strong> en {year}, alquilar una cancha sintética en Pereira cuesta entre
+      <strong>{formatCOP(min)}</strong>{max !== min && <> y <strong>{formatCOP(max!)}</strong></>} por hora, según el tamaño
+      de la cancha. Dividido entre los jugadores, cada uno paga desde unos
+      <strong>{formatCOP(Math.ceil(cheapest.price / cheapest.players / 100) * 100)}</strong>.
+    </p>
+  )}
+
+  <h2>Precios por club y tipo de cancha</h2>
+  <p>
+    Estos son los precios por hora de los {s.clubs} clubes de Pereira que reciben reservas en línea en Canchariane. Se actualizan
+    automáticamente con la información de cada club.
+  </p>
+  <div class="table-wrap">
+    <table>
+      <caption class="sr-only">Precio por hora de canchas sintéticas en Pereira</caption>
+      <thead>
+        <tr><th scope="col">Club</th><th scope="col">Cancha</th><th scope="col">Precio/hora</th><th scope="col">Por jugador*</th></tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr>
+            <td><a href={clubPath(r.club.slug)}>{r.club.name}</a></td>
+            <td>{r.label}{r.lighting ? ' · con luz' : ''}{r.covered ? ' · techada' : ''}</td>
+            <td class="font-semibold text-ink tabular-nums">{formatCOP(r.price)}</td>
+            <td class="tabular-nums">{formatCOP(Math.ceil(r.price / r.players / 100) * 100)} <span class="text-sm text-muted">({r.players} jug.)</span></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p class="text-base text-muted">* Dividiendo el valor entre los dos equipos completos, redondeado a la centena.</p>
+
+  <h2>¿Qué hace que una cancha cueste más?</h2>
+  <ul>
+    <li><strong>El tamaño.</strong> Una cancha de fútbol 9 es varias veces más grande que una de fútbol 5 y cuesta más por hora, aunque por jugador puede salir parecido o más barato.</li>
+    <li><strong>El horario.</strong> Las noches entre semana y los fines de semana son las horas más pedidas. Algunos clubes pueden manejar tarifas distintas por franja; el valor exacto lo ves antes de confirmar.</li>
+    <li><strong>Iluminación y cubierta.</strong> Las canchas con buena luz permiten jugar de noche, y las techadas te salvan de la lluvia de Pereira.</li>
+    <li><strong>La duración.</strong> Los precios de esta guía son por una hora, que es lo estándar para un partido.</li>
+  </ul>
+
+  <h2>¿Cuánto paga cada jugador?</h2>
+  <p>
+    La cuenta es simple: <strong>precio de la hora ÷ número de jugadores</strong>. En fútbol 5 juegan 10 personas (5 por equipo), en fútbol 6
+    juegan 12 y en fútbol 9 juegan 18. Si se suman suplentes para rotar, cada uno paga todavía menos.
+  </p>
+  {cheapest && (
+    <p>
+      Ejemplo: una cancha de {cheapest.label.toLowerCase()} en {cheapest.club.name} cuesta {formatCOP(cheapest.price)} la hora. Entre {cheapest.players}
+      jugadores, son unos {formatCOP(Math.ceil(cheapest.price / cheapest.players / 100) * 100)} por persona.
+    </p>
+  )}
+
+  <h2>Cómo reservar al mejor precio</h2>
+  <ol>
+    <li><strong>Compara clubes</strong> en la <a href="/canchas/">lista de canchas sintéticas de Pereira</a>: ahí ves el precio desde, la ubicación y el horario de cada uno.</li>
+    <li><strong>Reserva con tiempo</strong> si quieres jugar de noche o el fin de semana: son las horas que primero se llenan.</li>
+    <li><strong>Revisa las horas de la tarde</strong> entre semana: suelen estar más libres.</li>
+    <li><strong>Reserva en línea</strong> y evita llegar a un club y encontrar la cancha ocupada. En Canchariane ves las horas libres en tiempo real y la reserva queda confirmada al instante.</li>
+  </ol>
+  <p>
+    <a href={appLink('/', { campaign: 'guia-precios-texto' })}>Ver horarios libres y reservar →</a>
+  </p>
+</ArticleLayout>

@@ -1,0 +1,57 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Icon from '../../components/Icon.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { GUIDES, guidePath } from '../../lib/guides';
+import { SITE } from '../../lib/config';
+import { webPageSchema, abs } from '../../lib/schema';
+
+const crumbs = [
+  { name: 'Inicio', path: '/' },
+  { name: 'Guías', path: '/guias/' },
+];
+const title = `Guías para Jugar Fútbol en ${SITE.defaultCity}`;
+const description = `Precios de canchas sintéticas en ${SITE.defaultCity}, cómo organizar un partido de fútbol 5 y diferencias entre fútbol 5, 6, 7 y 9.`;
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  breadcrumbs={crumbs}
+  schema={[
+    webPageSchema({ path: '/guias/', name: title, description }),
+    {
+      '@type': 'ItemList',
+      itemListElement: GUIDES.map((g, i) => ({ '@type': 'ListItem', position: i + 1, url: abs(guidePath(g.slug)), name: g.title })),
+    },
+  ]}
+>
+  <section class="relative isolate overflow-hidden border-b border-line">
+    <div class="pitch-grid absolute inset-0 -z-10" aria-hidden="true"></div>
+    <div class="mx-auto max-w-7xl px-4 pt-8 pb-14 sm:px-6 lg:px-8 lg:pt-12">
+      <Breadcrumbs items={crumbs} />
+      <h1 class="display mt-8 text-[clamp(2.3rem,9vw,4.75rem)]">Guías para <span class="mark-pitch">jugar</span></h1>
+      <p class="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft">{description}</p>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20" aria-label="Listado de guías">
+    <ul class="grid gap-4 md:grid-cols-3 lg:gap-6">
+      {GUIDES.map((g, i) => (
+        <li>
+          <a href={guidePath(g.slug)} class:list={['card group flex h-full flex-col p-6 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-electric/10 sm:p-8', i === 0 && 'md:bg-electric md:text-white']}>
+            <span class:list={['eyebrow', i === 0 ? 'text-electric md:text-pitch' : 'text-electric']}>{g.eyebrow}</span>
+            <h2 class="display-tight mt-4 text-2xl">{g.title}</h2>
+            <p class:list={['mt-3 text-sm leading-relaxed', i === 0 ? 'text-ink-soft md:text-white/85' : 'text-ink-soft']}>{g.description}</p>
+            <span class:list={['mt-auto inline-flex items-center gap-1.5 pt-6 text-sm font-semibold', i === 0 ? 'text-electric md:text-pitch' : 'text-electric']}>
+              Leer · {g.readMinutes} min <Icon name="arrow" class="size-4 transition group-hover:translate-x-1" />
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <CtaBand campaign="guias" />
+</BaseLayout>

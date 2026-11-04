@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getClubs, stats, formatCOP, hoursSummary } from '../lib/clubs';
 import { SITE, APP_URL } from '../lib/config';
+import { GUIDES, guidePath } from '../lib/guides';
 
 /** /llms.txt — resumen en Markdown para asistentes de IA (estándar llmstxt.org). */
 export const GET: APIRoute = async () => {
@@ -27,6 +28,9 @@ export const GET: APIRoute = async () => {
     `- [Todas las canchas](${SITE.url}/canchas/)`,
     `- [Preguntas frecuentes](${SITE.url}/preguntas-frecuentes/)`,
     `- [Para dueños de canchas](${SITE.url}/para-clubes/)`,
+    '',
+    '## Guías',
+    ...GUIDES.map((g) => `- [${g.title}](${SITE.url}${guidePath(g.slug)}): ${g.description}`),
     '',
   ];
   return new Response(lines.join('\n'), { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });

@@ -137,3 +137,21 @@ export function webPageSchema(opts: { path: string; name: string; description: s
     ...(opts.about ? { about: { '@id': opts.about } } : {}),
   };
 }
+
+export function articleSchema(opts: { path: string; title: string; description: string; published: string; modified: string; image?: string }) {
+  return {
+    '@type': 'Article',
+    '@id': `${abs(opts.path)}#article`,
+    headline: opts.title,
+    description: opts.description,
+    url: abs(opts.path),
+    mainEntityOfPage: abs(opts.path),
+    datePublished: opts.published,
+    dateModified: opts.modified,
+    inLanguage: SITE.lang,
+    image: abs(opts.image ?? SITE.ogImage),
+    author: { '@id': ORG_ID },
+    publisher: { '@id': ORG_ID },
+    isPartOf: { '@id': WEBSITE_ID },
+  };
+}

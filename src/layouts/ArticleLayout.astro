@@ -1,0 +1,100 @@
+---
+/** Layout de guías: artículo legible + schema Article + enlaces internos + CTA. */
+import BaseLayout from './BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Icon from '../components/Icon.astro';
+import { GUIDES, guidePath, getGuide } from '../lib/guides';
+import { articleSchema, faqSchema, webPageSchema } from '../lib/schema';
+import { appLink } from '../lib/config';
+
+interface Props {
+  slug: string;
+  /** Preguntas frecuentes visibles al final del artículo (también van al schema). */
+  faqs?: { q: string; a: string }[];
+}
+const { slug, faqs = [] } = Astro.props;
+const g = getGuide(slug);
+const path = guidePath(slug);
+const modified = new Date().toISOString().slice(0, 10);
+const crumbs = [
+  { name: 'Inicio', path: '/' },
+  { name: 'Guías', path: '/guias/' },
+  { name: g.eyebrow, path },
+];
+const others = GUIDES.filter((x) => x.slug !== slug);
+const fmtDate = (iso: string) =>
+  new Date(iso + 'T12:00:00').toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<BaseLayout
+  title={g.seoTitle}
+  description={g.description}
+  ogType="article"
+  breadcrumbs={crumbs}
+  schema={[
+    webPageSchema({ path, name: g.seoTitle, description: g.description }),
+    articleSchema({ path, title: g.title, description: g.description, published: g.published, modified }),
+    ...(faqs.length ? [faqSchema(faqs)] : []),
+  ]}
+>
+  <article>
+    <header class="relative isolate overflow-hidden border-b border-line">
+      <div class="pitch-grid absolute inset-0 -z-10" aria-hidden="true"></div>
+      <div class="mx-auto max-w-3xl px-4 pt-8 pb-12 sm:px-6 lg:pt-12 lg:pb-16">
+        <Breadcrumbs items={crumbs} />
+        <p class="eyebrow mt-8 text-electric"><span class="h-0.5 w-6 bg-pitch" aria-hidden="true"></span>{g.eyebrow}</p>
+        <h1 class="display-tight mt-4 text-[clamp(2rem,7vw,3.5rem)] text-ink">{g.title}</h1>
+        <p class="mt-5 text-lg leading-relaxed text-ink-soft">{g.description}</p>
+        <p class="mt-6 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
+          <span>Actualizado el <time datetime={modified}>{fmtDate(modified)}</time></span>
+          <span>{g.readMinutes} min de lectura</span>
+        </p>
+      </div>
+    </header>
+
+    <div class="prose-article mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:py-16">
+      <slot />
+
+      {faqs.length > 0 && (
+        <>
+          <h2>Preguntas frecuentes</h2>
+          {faqs.map((f) => (
+            <>
+              <h3>{f.q}</h3>
+              <p>{f.a}</p>
+            </>
+          ))}
+        </>
+      )}
+
+      <div class="callout !mt-12 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <p class="!mt-0 font-semibold">¿Listo para jugar? Mira las horas libres y reserva en segundos.</p>
+        <a href={appLink('/', { campaign: 'guia', content: slug })} class="btn btn-primary shrink-0">
+          Reservar cancha <Icon name="arrow" class="size-5" />
+        </a>
+      </div>
+    </div>
+  </article>
+
+  <aside class="border-t border-line bg-mist" aria-labelledby="mas-guias">
+    <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      <h2 id="mas-guias" class="display text-3xl">Más guías</h2>
+      <ul class="mt-8 grid gap-4 md:grid-cols-2">
+        {others.map((o) => (
+          <li>
+            <a href={guidePath(o.slug)} class="card group flex h-full flex-col p-6 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-electric/10">
+              <span class="eyebrow text-electric">{o.eyebrow}</span>
+              <span class="display-tight mt-3 text-xl text-ink">{o.title}</span>
+              <span class="mt-auto inline-flex items-center gap-1.5 pt-5 text-sm font-semibold text-electric">
+                Leer guía <Icon name="arrow" class="size-4 transition group-hover:translate-x-1" />
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </aside>
+
+  <CtaBand campaign={`guia-${slug}`} />
+</BaseLayout>

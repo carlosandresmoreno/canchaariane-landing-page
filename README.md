@@ -26,6 +26,7 @@ cancha.arianedevs.com   (app Angular: el usuario busca y reserva)
 | `npm run build` | Genera el sitio en `dist/` (lee la API en vivo) |
 | `npm run preview` | Sirve `dist/` localmente |
 | `npm run check` | Verificación de tipos |
+| `npm run indexnow` | Avisa a Bing/IndexNow de todas las URLs. **Ejecutar después de cada despliegue** |
 | `npm run sync:clubs` | Actualiza `src/data/clubs.snapshot.json` (respaldo si la API falla) |
 
 ## Configuración (`.env`)
@@ -96,6 +97,7 @@ El build vuelve a leer la API, regenera las páginas de los clubes, el sitemap y
 | `/canchas/` | Listado de todos los clubes |
 | `/canchas/{slug}/` | **Una página por club**, generada automáticamente desde la API |
 | `/canchas-sinteticas/{ciudad}/` | Se genera sola cuando hay **2 o más ciudades** y la ciudad tiene **3 o más clubes** (evita duplicados) |
+| `/guias/` y `/guias/*/` | Guías con datos reales (precios, organizar partido, formatos) |
 | `/preguntas-frecuentes/` | Preguntas frecuentes completas |
 | `/para-clubes/` | Captación de nuevos clubes (B2B) |
 | `/sitemap-index.xml`, `/robots.txt`, `/llms.txt` | SEO e IA (permite explícitamente GPTBot, ClaudeBot, PerplexityBot…) |
@@ -114,6 +116,8 @@ El build vuelve a leer la API, regenera las páginas de los clubes, el sitemap y
 ---
 
 ## Checklist después de publicar
+
+> **Plan completo paso a paso:** [docs/SEO-PLAN.md](docs/SEO-PLAN.md)
 
 1. **Google Search Console:** verifica la propiedad de dominio `arianedevs.com` (registro TXT en Route 53) y envía `https://canchas.arianedevs.com/sitemap-index.xml`.
 2. **Bing Webmaster Tools:** importa desde Search Console. Bing alimenta a ChatGPT Search y a Copilot.
